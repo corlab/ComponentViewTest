@@ -217,8 +217,11 @@ public class FxWrapper {
 
 
     public void addNode(String name, String type) {
+
         Platform.runLater(() -> {
+            System.out.println("GIBTS NOCH NICHT");
             listViewItems.forEach(nodeItem -> {
+
                 if (nodeItem.getName() == type) {
                     VNode vn = flow.newNode();
                     vn.setTitle(name);
@@ -370,6 +373,10 @@ public class FxWrapper {
 
         });
 
+    }
+
+    public boolean nodeExists(String id){
+        return flow.getNodeLookup().getById(id) != null;
     }
 
     private int getNodeIndex(String id) {

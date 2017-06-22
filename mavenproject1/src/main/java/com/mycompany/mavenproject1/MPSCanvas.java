@@ -63,8 +63,9 @@ public class MPSCanvas extends ScalableContentPane {
 
 
                             vn.getValueObject().setValue(nodeItemToken);
-                            String nodeId = fxWrapper.getNodehandler().nodeCreated(vn.getId(),nodeItemToken.getName());
-                            vn.setId(nodeId);
+                            vn.setId(fxWrapper.getNodehandler().nodeCreated(vn.getId(),nodeItemToken.getName()));
+                            vn.setY(event.getY());
+                            vn.setX(event.getX());
 
 
 
@@ -125,6 +126,7 @@ public class MPSCanvas extends ScalableContentPane {
                 });
             }
             if (mouseEvent.getButton() == MouseButton.SECONDARY) {
+                System.out.println(mouseEvent.getX());
                 }
 
         });
