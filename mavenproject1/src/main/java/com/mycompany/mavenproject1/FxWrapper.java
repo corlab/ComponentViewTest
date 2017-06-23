@@ -162,7 +162,7 @@ public class FxWrapper {
         ZoomHandler zoomHandler = new ZoomHandler();
         
         fXSkinFactory = new FXValueSkinFactory(canvas.getContent());
-        fXSkinFactory.addSkinClassForConnectionType("double",CustomConnectionSkin.class);
+        //fXSkinFactory.addSkinClassForConnectionType("double",CustomConnectionSkin.class);
 
         fXSkinFactory.addSkinClassForValueType(NodeItem.class, MPSConceptSkin.class);
         /*bp.setOnScroll(event -> {

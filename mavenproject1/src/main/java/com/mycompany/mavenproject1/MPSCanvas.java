@@ -64,8 +64,9 @@ public class MPSCanvas extends ScalableContentPane {
 
                             vn.getValueObject().setValue(nodeItemToken);
                             vn.setId(fxWrapper.getNodehandler().nodeCreated(vn.getId(),nodeItemToken.getName()));
-                            vn.setY(event.getY());
-                            vn.setX(event.getX());
+                            //TODO
+                            vn.setY(event.getY()*this.getScaleY());
+                            vn.setX(event.getX()*this.getScaleX());
 
 
 
@@ -119,6 +120,7 @@ public class MPSCanvas extends ScalableContentPane {
 
 
         this.setOnMouseClicked(mouseEvent -> {
+            fxWrapper.getFlow().getNodes().forEach(vNode -> vNode.requestSelection(false));
             if (mouseEvent.getButton() == MouseButton.MIDDLE) {
                 fxWrapper.getFlow().getNodes().forEach(vNode -> {
                     vNode.setX(0);
@@ -126,8 +128,9 @@ public class MPSCanvas extends ScalableContentPane {
                 });
             }
             if (mouseEvent.getButton() == MouseButton.SECONDARY) {
-                System.out.println(mouseEvent.getX());
-                }
+
+
+            }
 
         });
     }
