@@ -17,8 +17,8 @@ public class CustomConnectionSkin extends FXNewConnectionSkin {
 
     @Override
     protected void initStyle() {
-        this.connectionPath.getStyleClass().setAll(new String[]{"vnode-new-connection2", "vnode-new-connection-" + this.getSender().getType()});
-        this.receiverConnectorUI.getStyleClass().setAll(new String[]{"vnode-new-connection-receiver", "vnode-new-connection-receiver-" + this.getSender().getType()});
+        this.connectionPath.getStyleClass().setAll("vnode-new-connection2", "vnode-new-connection-" + this.getSender().getType());
+        this.receiverConnectorUI.getStyleClass().setAll("vnode-new-connection-receiver", "vnode-new-connection-receiver-" + this.getSender().getType());
         this.receiverConnectorUI.setStrokeWidth(3.0D);
     }
 }

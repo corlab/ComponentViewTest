@@ -111,16 +111,12 @@
     </build>
     <dependencies>
 
-        <dependency>
-            <groupId>eu.mihosoft.vrl.workflow</groupId>
-            <artifactId>vworkflows-core</artifactId>
-            <version>0.2.3</version>
-        </dependency>
-        <dependency>
-            <groupId>eu.mihosoft.vrl.workflow</groupId>
-            <artifactId>vworkflows-fx</artifactId>
-            <version>0.2.3</version>
-        </dependency>
+
+
+
+
+
+
     </dependencies>
 
 </project>

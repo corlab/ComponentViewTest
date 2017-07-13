@@ -66,6 +66,21 @@ public class MPSConceptSkin extends CustomFlowNodeSkinNew {
         properties.setTextFill(Color.ANTIQUEWHITE);
         vBox.getChildren().add(properties);
 
+        getModel().getConnectors().forEach(connector -> {
+            Label label = new Label(connector.getType());
+            label.setTextFill(Color.ANTIQUEWHITE);
+            if(connector.isInput()) {
+                label.setLayoutX(-getConnectorShape(connector).getRadius() - label.getText().length()*2);
+
+            }
+
+            else {
+                label.setLayoutX(getConnectorShape(connector).getRadius());
+            }
+            (getConnectorShape(connector)).addToRegion(label);
+        });
+
+
 
 
         nodeItem.getProperties().forEach(property -> {
@@ -74,12 +89,7 @@ public class MPSConceptSkin extends CustomFlowNodeSkinNew {
             propertyLabel.setTextFill(Color.ANTIQUEWHITE);
             vBox.getChildren().add(propertyLabel);
         });
-        nodeItem.getPorts().forEach(port -> {
-            Label portLabel = new Label(port.getName() +" "+ port.getType()+ " is "+port.getOutIn());
-            portLabel.setStyle("-fx-font-size: 12; ");
-            portLabel.setTextFill(Color.ANTIQUEWHITE);
-            vBox.getChildren().add(portLabel);
-        });
+
 
 
         //getNode().setPrefHeight(100);

@@ -80,7 +80,6 @@ public abstract class CustomFlowNodeSkinNew extends FXFlowNodeSkinBase {
 
             AnchorPane nodePane = new AnchorPane();
             contentPane.getContent().getChildren().add(nodePane);
-
             nodePane.getChildren().add(view);
 
             AnchorPane.setTopAnchor(view, 0.0);

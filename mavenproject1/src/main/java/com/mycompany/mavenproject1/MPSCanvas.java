@@ -1,4 +1,5 @@
 package com.mycompany.mavenproject1;
+
 import eu.mihosoft.vrl.workflow.Connector;
 import eu.mihosoft.vrl.workflow.VNode;
 import eu.mihosoft.vrl.workflow.fx.ScalableContentPane;

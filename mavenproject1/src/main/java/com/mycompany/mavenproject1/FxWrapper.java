@@ -5,14 +5,20 @@
  */
 package com.mycompany.mavenproject1;
 
-import eu.mihosoft.vrl.workflow.*;
-import eu.mihosoft.vrl.workflow.fx.*;
+
+
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.*;
+
+
+import eu.mihosoft.vrl.workflow.*;
+import eu.mihosoft.vrl.workflow.fx.FXValueSkinFactory;
+import eu.mihosoft.vrl.workflow.fx.ScalableContentPane;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.collections.FXCollections;
@@ -21,14 +27,33 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.embed.swing.JFXPanel;
 import javafx.geometry.Orientation;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 
 import javax.swing.SwingUtilities;
 
 
 public class FxWrapper {
+    private ExecutorService executor = Executors.newCachedThreadPool(runnable -> {
+        Thread t = new Thread(runnable);
+        t.setDaemon(true);
+        return t ;
+    });
+
+    private ExecutorService conExecutor = Executors.newCachedThreadPool(runnable -> {
+        Thread t = new Thread(runnable);
+        t.setDaemon(true);
+        return t ;
+    });
+
 
     private NodeHandler nodehandler;
     private ObservableList<NodeItem> listViewItems;
@@ -73,6 +98,17 @@ public class FxWrapper {
         testItem.addProperty(new Property("test", "double"));
         testItem.addPort(new Port("testIn", "double", "in"));
         testItem.addPort(new Port("testOut", "double", "out"));
+        testItem.addPort(new Port("testOut", "double", "out"));
+        testItem.addPort(new Port("testOut", "double", "out"));
+        testItem.addPort(new Port("testOut", "double", "out"));
+        testItem.addPort(new Port("testOut", "double", "out"));
+        testItem.addPort(new Port("testOut", "double", "in"));
+        testItem.addPort(new Port("testOut", "double", "in"));
+        testItem.addPort(new Port("testOut", "double", "in"));
+        testItem.addPort(new Port("testOut", "double", "in"));
+        testItem.addPort(new Port("testOut", "double", "in"));
+        testItem.addPort(new Port("testOut", "double", "in"));
+        testItem.addPort(new Port("testOut", "double", "in"));
 
         listViewItems.add(testItem);
 
@@ -134,9 +170,16 @@ public class FxWrapper {
 
             flow.addSkinFactories(fXSkinFactory);
             bp.setLeft(listView);
+
+
+
+            MagnifierPane magnifierPane = new MagnifierPane();
+            magnifierPane.setScopeLinesVisible(true);
+            magnifierPane.getChildren().add(bp);
             bp.setCenter(canvas);
-            Scene scene = new Scene(bp);
-            File f = new File("default.css");
+            Scene scene = new Scene(magnifierPane);
+
+            File f = new File("test.css");
             String fileURI = f.toURI().toString();
             scene.getStylesheets().clear();
             scene.getStylesheets().add(fileURI);
@@ -144,14 +187,11 @@ public class FxWrapper {
             fxPanel.setScene(scene);
 
 
-
-
-
         });
     }
 
     private void initListView() {
-        listViewItems = FXCollections.<NodeItem>observableArrayList();
+        listViewItems = FXCollections.observableArrayList();
         listView = new ListView<>(listViewItems);
         listView.setCellFactory(param -> new MyCell());
         listView.setOrientation(Orientation.VERTICAL);
@@ -159,22 +199,8 @@ public class FxWrapper {
 
     private void initCanvas() {
         canvas = new MPSCanvas(this);
-        ZoomHandler zoomHandler = new ZoomHandler();
-        
-        fXSkinFactory = new FXValueSkinFactory(canvas.getContent());
-        //fXSkinFactory.addSkinClassForConnectionType("double",CustomConnectionSkin.class);
-
+        fXSkinFactory = new FXValueSkinFactory( canvas.getContent());
         fXSkinFactory.addSkinClassForValueType(NodeItem.class, MPSConceptSkin.class);
-        /*bp.setOnScroll(event -> {
-            double zoomFactor = 1.2;
-            if (event.getDeltaY() <= 0) {
-                // zoom out
-                zoomFactor = 1 / zoomFactor;
-            }
-            zoomHandler.zoom(canvas.getContent(), zoomFactor, event.getSceneX(), event.getScreenY());
-        });*/
-
-
     }
 
     public void sytemUpdate() {
@@ -267,24 +293,33 @@ public class FxWrapper {
 
 
     public void addNodeAndCon(final Map<String, String> nodes, final ArrayList<String[]> connections) {
+
         Thread nodeConT = new Thread(new Task() {
             protected Void call() throws Exception {
                 nodes.forEach((name, type) -> {
                     Platform.runLater(() -> {
+                        deleteNode = false;
                         FxWrapper.this.listViewItems.forEach((nodeItem) -> {
-                            if(nodeItem.getName() == type) {
+                            if (nodeItem.getName() == type) {
                                 VNode vn = FxWrapper.this.flow.newNode();
-                                vn.setTitle(name);
+
+
                                 vn.setId(name);
+                                vn.setTitle(nodehandler.getNodeName(vn.getId()));
+                                vn.setX(nodehandler.getNodeX(vn.getId()));
+                                vn.setY(nodehandler.getNodeY(vn.getId()));
+                                vn.titleProperty().addListener((observableValue, s, t1) -> {
+                                    nodehandler.nameChanged(t1, vn.getId());
+                                });
                                 vn.getValueObject().setValue(nodeItem);
                                 vn.xProperty().addListener(observable -> {
-                                    DoubleProperty dp = (DoubleProperty)observable;
-                                    nodehandler.changePositionPersistenceX(dp.doubleValue(),vn.getId());
+                                    DoubleProperty dp = (DoubleProperty) observable;
+                                    nodehandler.changePositionPersistenceX(dp.doubleValue(), vn.getId());
                                 });
 
                                 vn.yProperty().addListener(observable -> {
-                                    DoubleProperty dp = (DoubleProperty)observable;
-                                    nodehandler.changePositionPersistenceY(dp.doubleValue(),vn.getId());
+                                    DoubleProperty dp = (DoubleProperty) observable;
+                                    nodehandler.changePositionPersistenceY(dp.doubleValue(), vn.getId());
                                 });
 
                                 nodeItem.getPorts().forEach(port -> {
@@ -295,7 +330,7 @@ public class FxWrapper {
 
                                         input.addConnectionEventListener(connectionEvent -> {
 
-                                            if(isDeleteNode() && connectionEvent.getEventType().getName().equals("ConnectionEvent:ADD")) {
+                                            if (isDeleteNode() && connectionEvent.getEventType().getName().equals("ConnectionEvent:ADD")) {
                                                 System.out.println("ADDED CONNECTION");
                                                 String targetNodeID = connectionEvent.getReceiverConnector().getNode().getId();
                                                 String sourceNodeID = connectionEvent.getSenderConnector().getNode().getId();
@@ -306,11 +341,11 @@ public class FxWrapper {
 
 
                                             }
-                                            if(isDeleteNode() && connectionEvent.getEventType().getName().equals("ConnectionEvent:REMOVE")){
+                                            if (isDeleteNode() && connectionEvent.getEventType().getName().equals("ConnectionEvent:REMOVE")) {
                                                 getNodehandler().connectionDeleted(connectionEvent.getConnection().getId());
                                             }
                                         });
-                                        System.out.println("Port"+port.getName());
+                                        System.out.println("Port" + port.getName());
                                         input.setLocalId(port.getName());
 
                                     } else {
@@ -335,29 +370,156 @@ public class FxWrapper {
 
                 connections.forEach((strings) -> {
                     ObservableList nodesx = FxWrapper.this.flow.getNodes();
-                    if(!nodesx.isEmpty()) {
-                        Connection c = FxWrapper.this.flow.connect((Connector)((VNode)nodesx.get(FxWrapper.this.getNodeIndex(strings[0]))).getOutputs().get(FxWrapper.this.getNodeOutputPortIndex(FxWrapper.this.getNodeIndex(strings[0]), strings[0] + ":c:" + strings[1])), (Connector)((VNode)nodesx.get(FxWrapper.this.getNodeIndex(strings[2]))).getInputs().get(FxWrapper.this.getNodeInputPortIndex(FxWrapper.this.getNodeIndex(strings[2]), strings[2] + ":c:" + strings[3]))).getConnection();
+                    if (!nodesx.isEmpty()) {
+                        Connection c = FxWrapper.this.flow.connect(((VNode) nodesx.get(FxWrapper.this.getNodeIndex(strings[0]))).getOutputs().get(FxWrapper.this.getNodeOutputPortIndex(FxWrapper.this.getNodeIndex(strings[0]), strings[0] + ":c:" + strings[1])), ((VNode) nodesx.get(FxWrapper.this.getNodeIndex(strings[2]))).getInputs().get(FxWrapper.this.getNodeInputPortIndex(FxWrapper.this.getNodeIndex(strings[2]), strings[2] + ":c:" + strings[3]))).getConnection();
                         c.setId(strings[4]);
                         System.out.println(c.getId());
                     }
                 });
-                flow.getNodes().forEach(vNode -> {
-                    Platform.runLater(() -> {
-                        vNode.setX(nodehandler.getNodeX(vNode.getId()));
-                        vNode.setY(nodehandler.getNodeY(vNode.getId()));
-                        vNode.titleProperty().addListener((observableValue, s, t1) -> {
-                            nodehandler.nameChanged(t1,vNode.getId());
-                        });
-                        vNode.setTitle(nodehandler.getNodeName(vNode.getId()));
-                    });
 
-                });
                 FxWrapper.this.flow.removeSkinFactories(getfXSkinFactory());
                 FxWrapper.this.flow.addSkinFactories(getfXSkinFactory());
+                deleteNode = true;
             }
         });
         nodeConT.setDaemon(true);
         nodeConT.start();
+    }
+
+    public void addNodeAndCon2(final Map<String, String> nodes, final ArrayList<String[]> connections) {
+        executor = Executors.newCachedThreadPool(runnable -> {
+            Thread t = new Thread(runnable);
+            t.setDaemon(true);
+            return t ;
+        });
+        nodes.forEach((name, type) -> {
+            Thread nodeConT = new Thread(new Task() {
+
+                protected Void call() throws Exception {
+
+                    Platform.runLater(() -> {
+                        FxWrapper.this.listViewItems.forEach((nodeItem) -> {
+                            if (nodeItem.getName() == type) {
+                                VNode vn = FxWrapper.this.flow.newNode();
+                                vn.setTitle(name);
+                                vn.setId(name);
+                                vn.setX(nodehandler.getNodeX(vn.getId()));
+                                vn.setY(nodehandler.getNodeY(vn.getId()));
+                                vn.titleProperty().addListener((observableValue, s, t1) -> {
+                                    nodehandler.nameChanged(t1,vn.getId());
+                                });
+                                vn.setTitle(nodehandler.getNodeName(vn.getId()));
+                                vn.getValueObject().setValue(nodeItem);
+                                vn.xProperty().addListener(observable -> {
+                                    DoubleProperty dp = (DoubleProperty) observable;
+                                    nodehandler.changePositionPersistenceX(dp.doubleValue(), vn.getId());
+                                });
+
+                                vn.yProperty().addListener(observable -> {
+                                    DoubleProperty dp = (DoubleProperty) observable;
+                                    nodehandler.changePositionPersistenceY(dp.doubleValue(), vn.getId());
+                                });
+
+                                nodeItem.getPorts().forEach(port -> {
+                                    if (port.getOutIn() == "in") {
+
+                                        Connector input = vn.addInput(port.getType());
+
+
+                                        input.addConnectionEventListener(connectionEvent -> {
+
+                                            if (isDeleteNode() && connectionEvent.getEventType().getName().equals("ConnectionEvent:ADD")) {
+                                                System.out.println("ADDED CONNECTION");
+                                                String targetNodeID = connectionEvent.getReceiverConnector().getNode().getId();
+                                                String sourceNodeID = connectionEvent.getSenderConnector().getNode().getId();
+                                                String targetPortname = connectionEvent.getReceiverConnector().getLocalId();
+                                                String sourcePortname = connectionEvent.getSenderConnector().getLocalId();
+                                                String id = getNodehandler().nodesConnected(targetNodeID, sourceNodeID, sourcePortname, targetPortname, connectionEvent.getConnection().getId());
+                                                connectionEvent.getConnection().setId(id);
+
+
+                                            }
+                                            if (isDeleteNode() && connectionEvent.getEventType().getName().equals("ConnectionEvent:REMOVE")) {
+                                                getNodehandler().connectionDeleted(connectionEvent.getConnection().getId());
+                                            }
+                                        });
+                                        System.out.println("Port" + port.getName());
+                                        input.setLocalId(port.getName());
+
+                                    } else {
+
+                                        Connector output = vn.addOutput(port.getType());
+                                        output.setLocalId(port.getName());
+                                    }
+
+
+                                });
+                            }
+
+                            FxWrapper.this.flow.removeSkinFactories(getfXSkinFactory());
+                            FxWrapper.this.flow.addSkinFactories(getfXSkinFactory());
+                        });
+                    });
+
+                    return null;
+                }
+
+                protected void succeeded() {
+
+
+                }
+            });
+            executor.execute(nodeConT);
+        });
+
+        executor.shutdown();
+        try {
+            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+
+
+        connections.forEach((strings) -> {
+            Thread nodeConT = new Thread(new Task() {
+
+                @Override
+                protected Object call() throws Exception {
+                    ObservableList nodesx = FxWrapper.this.flow.getNodes();
+                    if (!nodesx.isEmpty()) {
+                        System.out.println("MUUUHKHUHUHUHUHUHUH");
+
+                            Connection c = FxWrapper.this.flow.connect(((VNode) nodesx.get(FxWrapper.this.getNodeIndex(strings[0]))).getOutputs().get(FxWrapper.this.getNodeOutputPortIndex(FxWrapper.this.getNodeIndex(strings[0]), strings[0] + ":c:" + strings[1])), ((VNode) nodesx.get(FxWrapper.this.getNodeIndex(strings[2]))).getInputs().get(FxWrapper.this.getNodeInputPortIndex(FxWrapper.this.getNodeIndex(strings[2]), strings[2] + ":c:" + strings[3]))).getConnection();
+                            c.setId(strings[4]);
+                        FxWrapper.this.flow.removeSkinFactories(getfXSkinFactory());
+                        FxWrapper.this.flow.addSkinFactories(getfXSkinFactory());
+
+                    }
+                    return null;
+                }
+            });
+            conExecutor.execute(nodeConT);
+
+        });
+
+
+
+
+
+
+
+
+
+
+        Platform.runLater(() -> {
+
+        });
+
+
+
+
+
     }
 
 
@@ -375,7 +537,7 @@ public class FxWrapper {
 
     }
 
-    public boolean nodeExists(String id){
+    public boolean nodeExists(String id) {
         return flow.getNodeLookup().getById(id) != null;
     }
 
@@ -415,14 +577,14 @@ public class FxWrapper {
         return nodehandler;
     }
 
-    public void deleteNode(String mpsID){
+    public void deleteNode(String mpsID) {
         Platform.runLater(() -> {
             flow.getNodes().stream().filter(vNode -> vNode.getId().equals(mpsID)).forEach(vNode -> flow.remove(vNode));
         });
 
     }
 
-    public void deleteConnection(String mpsID,String type){
+    public void deleteConnection(String mpsID, String type) {
         Platform.runLater(() -> {
             Connections connections = flow.getConnections(type);
             connections.getConnections().stream().filter(connection -> connection.getId().equals(mpsID)).forEach(connection -> connections.remove(connection));
@@ -455,7 +617,6 @@ public class FxWrapper {
     public boolean isDeleteNode() {
         return deleteNode;
     }
-
 
 
 }
