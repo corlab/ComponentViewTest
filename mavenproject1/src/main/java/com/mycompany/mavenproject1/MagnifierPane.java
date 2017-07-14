@@ -170,7 +170,7 @@ public class MagnifierPane extends StackPane {
             @Override
             public void handle(MouseEvent e) {
                 if (active) {
-                    Platform.runLater(() -> {
+
                         viewer.hide();
                         viewer.show(MagnifierPane.this, e.getSceneX(), e.getSceneY());
                         int w = (int) (MagnifierPane.this.getWidth() * getScaleFactor());
@@ -181,11 +181,15 @@ public class MagnifierPane extends StackPane {
                         MagnifierPane.this.snapshot(callBack, param, writeImg);
                         snapView.setImage(writeImg);
                         clippedNode.setContent(snapView);
-                    });
+
 
                 }
             }
         });
+
+
+
+
 
         this.setOnKeyReleased(keyEvent -> {
             if(keyEvent.getCode() == KeyCode.Z) {
@@ -202,10 +206,21 @@ public class MagnifierPane extends StackPane {
 
             }
         });
+
+        this.setOnMouseDragEntered(mouseDragEvent -> {
+            if(active) active = !active;
+        });
+
+        this.setOnMouseDragOver(mouseDragEvent -> {
+            if(active) active = !active;
+        });
+
+        this.
         addEventFilter(MouseEvent.MOUSE_MOVED, new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent e) {
                 if(active) {
+                    MagnifierPane.this.requestFocus();
                     if(!viewer.isShowing()) viewer.show(MagnifierPane.this, e.getSceneX(), e.getSceneY());
                     final double r = getRadius();
                     final double s = getScaleFactor();

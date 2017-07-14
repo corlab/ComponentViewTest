@@ -40,11 +40,11 @@
 */
 
 .vflow-background {
-    -fx-background-color: linear-gradient(to bottom, rgb(10,32,60), rgb(42,52,120));
+    -fx-background-color: linear-gradient(to bottom, rgb(10,32,40), rgb(42,52,120));
 }
 
 .window {
-    -fx-background-color: rgba(120,140,255,0.2);
+    -fx-background-color: rgba(0,140,255,0.2);
     -fx-border-color: rgba(120,140,255,0.42);
     -fx-border-width: 2;
 }
@@ -76,12 +76,12 @@
 }
 
 .vnode-connection {
-    -fx-stroke: rgba(120,140,255,0.2);
+    -fx-stroke: rgba(0,140,255,0.2);
     -fx-stroke-width: 5px;
 }
 
 .vnode-new-connection {
-    -fx-stroke: rgba(120,140,255,0.2);
+    -fx-stroke: rgba(255,0,0,0.2);
     -fx-stroke-width: 5px;
 }
 
