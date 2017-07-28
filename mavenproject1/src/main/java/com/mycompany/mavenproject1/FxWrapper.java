@@ -42,17 +42,9 @@ import javax.swing.SwingUtilities;
 
 
 public class FxWrapper {
-    private ExecutorService executor = Executors.newCachedThreadPool(runnable -> {
-        Thread t = new Thread(runnable);
-        t.setDaemon(true);
-        return t ;
-    });
+    private ExecutorService executor;
 
-    private ExecutorService conExecutor = Executors.newCachedThreadPool(runnable -> {
-        Thread t = new Thread(runnable);
-        t.setDaemon(true);
-        return t ;
-    });
+    private ExecutorService conExecutor;
 
 
     private NodeHandler nodehandler;
@@ -373,7 +365,9 @@ public class FxWrapper {
                     if (!nodesx.isEmpty()) {
                         Connection c = FxWrapper.this.flow.connect(((VNode) nodesx.get(FxWrapper.this.getNodeIndex(strings[0]))).getOutputs().get(FxWrapper.this.getNodeOutputPortIndex(FxWrapper.this.getNodeIndex(strings[0]), strings[0] + ":c:" + strings[1])), ((VNode) nodesx.get(FxWrapper.this.getNodeIndex(strings[2]))).getInputs().get(FxWrapper.this.getNodeInputPortIndex(FxWrapper.this.getNodeIndex(strings[2]), strings[2] + ":c:" + strings[3]))).getConnection();
                         c.setId(strings[4]);
-                        System.out.println(c.getId());
+                        FxWrapper.this.flow.removeSkinFactories(getfXSkinFactory());
+                        FxWrapper.this.flow.addSkinFactories(getfXSkinFactory());
+
                     }
                 });
 
@@ -388,6 +382,11 @@ public class FxWrapper {
 
     public void addNodeAndCon2(final Map<String, String> nodes, final ArrayList<String[]> connections) {
         executor = Executors.newCachedThreadPool(runnable -> {
+            Thread t = new Thread(runnable);
+            t.setDaemon(true);
+            return t ;
+        });
+        conExecutor = Executors.newCachedThreadPool(runnable -> {
             Thread t = new Thread(runnable);
             t.setDaemon(true);
             return t ;
@@ -501,20 +500,26 @@ public class FxWrapper {
             });
             conExecutor.execute(nodeConT);
 
-        });
-
-
-
-
-
-
-
-
-
-
-        Platform.runLater(() -> {
 
         });
+
+        conExecutor.shutdown();
+        try {
+            conExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+
+
+
+
+
+
+
+
+
+
 
 
 

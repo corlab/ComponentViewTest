@@ -128,7 +128,7 @@ public class MagnifierPane extends StackPane {
         final StackPane mask = new StackPane();
         getChildren().add(mask);
         final SimpleBooleanProperty maskFlag = new SimpleBooleanProperty(true);
-        getChildren().addListener(new ListChangeListener<Node>() {
+        /*getChildren().addListener(new ListChangeListener<Node>() {
             @Override
             public void onChanged(javafx.collections.ListChangeListener.Change<? extends Node> param) {
                 if (maskFlag.get()) {
@@ -138,7 +138,7 @@ public class MagnifierPane extends StackPane {
                     maskFlag.set(true);
                 }
             }
-        });
+        });*/
 
         addEventFilter(MouseEvent.MOUSE_ENTERED, new EventHandler<MouseEvent>() {
             @Override
