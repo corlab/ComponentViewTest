@@ -76,7 +76,7 @@
 }
 
 .vnode-connection {
-    -fx-stroke: rgba(0,140,255,0.2);
+    -fx-stroke: rgba(255,0,0,0.4);
     -fx-stroke-width: 5px;
 }
 

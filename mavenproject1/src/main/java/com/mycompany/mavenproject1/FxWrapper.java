@@ -11,11 +11,8 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
-
-
 import eu.mihosoft.vrl.workflow.*;
 import eu.mihosoft.vrl.workflow.fx.FXValueSkinFactory;
 import eu.mihosoft.vrl.workflow.fx.ScalableContentPane;
@@ -27,16 +24,10 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.embed.swing.JFXPanel;
 import javafx.geometry.Orientation;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
+
 
 import javax.swing.SwingUtilities;
 
@@ -55,7 +46,6 @@ public class FxWrapper {
     private ScalableContentPane canvas;
     private ListView<NodeItem> listView;
     private FXValueSkinFactory fXSkinFactory;
-    private Map<String, Connection> connectionMap;
     private VNode n;
     private VNode n2;
     private boolean deleteNode = true;
@@ -74,13 +64,11 @@ public class FxWrapper {
 
 
     private void initAndShowGUI(Container container) {
-
         container.setLayout(new BorderLayout());
         fxPanel = new JFXPanel();
         fxPanel.setVisible(true);
         container.add(fxPanel, BorderLayout.CENTER);
         bp = new BorderPane();
-        connectionMap = new HashMap<>();
         initListView();
 
         //TestItem
@@ -129,47 +117,37 @@ public class FxWrapper {
                 }
             });
 
-
             flow.setVisible(true);
-
-
             initCanvas();
 
             //test Node
             n = flow.newNode();
-
             n.getValueObject().setValue(testItem);
             Connector cn = n.addInput("muh");
-
-
             Connector cn5 = n.addInput("muh");
             Connector cn3 = n.addInput("muh");
             Connector cn4 = n.addInput("muh");
             cn.setLocalId("test1");
-
             cn.getValueObject().setValue(testItem);
             n.setId("test");
             System.out.println("TYPE " + cn.getType());
             System.out.println("ID " + cn.getId());
             n2 = flow.newNode();
             n2.setId("test2");
-
             Connector cn2 = n2.addOutput("muh");
             n2.getValueObject().setValue(testItem);
             cn2.setLocalId("test2");
             cn2.getValueObject().setValue(testItem);
             System.out.println(cn2.getId());
 
+
             flow.addSkinFactories(fXSkinFactory);
             bp.setLeft(listView);
-
-
-
-            MagnifierPane magnifierPane = new MagnifierPane();
-            magnifierPane.setScopeLinesVisible(true);
-            magnifierPane.getChildren().add(bp);
+            //MagnifierPane magnifierPane = new MagnifierPane();
+            //magnifierPane.setScopeLinesVisible(true);
+            //magnifierPane.getChildren().add(bp);
             bp.setCenter(canvas);
-            Scene scene = new Scene(magnifierPane);
+            Scene scene = new Scene(bp);
 
             File f = new File("test.css");
             String fileURI = f.toURI().toString();
@@ -219,8 +197,12 @@ public class FxWrapper {
                 });
             }
         });
-        sysUpdate.setDaemon(true);
         sysUpdate.start();
+        try {
+            sysUpdate.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
 
     }
