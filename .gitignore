@@ -3,3 +3,7 @@
 build/
 vcs.xml
 workspace.xml
+MPSViewer/target/
+MPSViewer/.idea
+*.iml
+
