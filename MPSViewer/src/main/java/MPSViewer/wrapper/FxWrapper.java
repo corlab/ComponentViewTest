@@ -28,11 +28,12 @@ import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.StackPane;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,13 +41,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-
-import java.awt.BorderLayout;
-import java.awt.Container;
-
-
-import javax.swing.SwingUtilities;
 
 
 public class FxWrapper {
@@ -58,11 +52,9 @@ public class FxWrapper {
     private NodeHandler nodehandler;
     private ObservableList<NodeItem> listViewItems;
     private BorderPane bp;
-    private ScrollPane scroller;
     private FXMLLoader loader;
     private Parent root;
     private CanvasContainerController controller;
-    private StackPane sp;
     private JFXPanel fxPanel;
     private VFlow flow;
     private ScalableContentPane canvas;
@@ -92,8 +84,6 @@ public class FxWrapper {
         fxPanel.setVisible(true);
         container.add(fxPanel, BorderLayout.CENTER);
         bp = new BorderPane();
-        scroller = new ScrollPane();
-        sp = new StackPane();
         initListView();
 
         loader = new FXMLLoader(getClass().getResource("/fxml/CanvasContainer.fxml"));
@@ -201,7 +191,7 @@ public class FxWrapper {
 
     private void initCanvas() {
         canvas = new MPSCanvas(this);
-        canvas.setAutoRescale(false);
+        //canvas.setAutoRescale(false);
         fXSkinFactory = new FXValueSkinFactory( canvas.getContent());
         fXSkinFactory.addSkinClassForValueType(NodeItem.class, MPSConceptSkin.class);
     }
