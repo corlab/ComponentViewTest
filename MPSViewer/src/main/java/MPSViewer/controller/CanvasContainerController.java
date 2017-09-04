@@ -13,10 +13,12 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
+import javafx.scene.Parent;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -24,8 +26,10 @@ import javafx.scene.shape.Rectangle;
 
 public class CanvasContainerController {
 
-    @FXML
+    private StackPane mainPane;
     private ScrollPane scroller;
+    private BorderPane viewPane;
+
 
     private Rectangle minimapImageMockup;
     private Rectangle minimapViewport;
@@ -35,6 +39,16 @@ public class CanvasContainerController {
     private Region content;
 
     final double SCALE_DELTA = 1.1;
+
+    public Parent init() {
+        mainPane = new StackPane();
+        viewPane = new BorderPane();
+        scroller = new ScrollPane();
+        viewPane.setCenter(scroller);
+        mainPane.getChildren().add(viewPane);
+
+        return mainPane;
+    }
 
     private void setupMinimap() {
         minimap = new StackPane();

@@ -22,7 +22,6 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.embed.swing.JFXPanel;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Orientation;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
@@ -35,7 +34,6 @@ import javafx.scene.layout.BorderPane;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -48,11 +46,9 @@ public class FxWrapper {
 
     private ExecutorService conExecutor;
 
-
     private NodeHandler nodehandler;
     private ObservableList<NodeItem> listViewItems;
     private BorderPane bp;
-    private FXMLLoader loader;
     private Parent root;
     private CanvasContainerController controller;
     private JFXPanel fxPanel;
@@ -86,7 +82,7 @@ public class FxWrapper {
         bp = new BorderPane();
         initListView();
 
-        loader = new FXMLLoader(getClass().getResource("/fxml/CanvasContainer.fxml"));
+        controller = new CanvasContainerController();
 
         //TestItem
         NodeItem testItem = new NodeItem();
@@ -159,13 +155,7 @@ public class FxWrapper {
 
             flow.addSkinFactories(fXSkinFactory);
 
-            try {
-                root = loader.load();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            controller = loader.getController();
+            root = controller.init();
             controller.configure(canvas);
             bp.setCenter(root);
             bp.setLeft(listView);
