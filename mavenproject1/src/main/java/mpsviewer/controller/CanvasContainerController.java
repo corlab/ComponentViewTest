@@ -13,6 +13,7 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Parent;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
@@ -166,17 +167,21 @@ public class CanvasContainerController {
             }
         });
 
-        /*
+
         zoomPane.setOnMouseClicked(mouseEvent -> {
             if(mouseEvent.isControlDown() && mouseEvent.getButton()== MouseButton.SECONDARY){
                 content.setScaleX(1);
                 content.setScaleY(1);
+                content.setTranslateX(0);
+                content.setTranslateY(0);
+
                 transformMapViewport(0, 0);
+
 
 
             }
         });
-        */
+
 
 
     }

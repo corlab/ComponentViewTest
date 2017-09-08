@@ -168,6 +168,7 @@ public class FxWrapper {
         testItem.addPort(new Port("testOut", "double", "in"));
         listViewItems.add(testItem);
         n = flow.newNode();
+        canvas.setAutoRescale(true);
         n.getValueObject().setValue(testItem);
         Connector cn = n.addInput("muh");
         Connector cn5 = n.addInput("muh");
