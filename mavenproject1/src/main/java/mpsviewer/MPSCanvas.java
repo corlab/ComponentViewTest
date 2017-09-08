@@ -5,8 +5,11 @@ import eu.mihosoft.vrl.workflow.VNode;
 import eu.mihosoft.vrl.workflow.fx.ScalableContentPane;
 import javafx.beans.property.DoubleProperty;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
+
+import java.util.ArrayList;
 
 /**
  * Created by jseidelmann on 31.03.17.
@@ -16,7 +19,7 @@ public class MPSCanvas extends ScalableContentPane {
 
     public MPSCanvas(FxWrapper fxWrapper) {
         this.fxWrapper = fxWrapper;
-        this.setStyle("-fx-background-color: linear-gradient(to bottom, rgb(10,32,60), rgb(42,52,120));");
+        this.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
         createDragDropEvents();
     }
 

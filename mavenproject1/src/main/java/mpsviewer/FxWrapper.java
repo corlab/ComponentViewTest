@@ -24,9 +24,14 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.embed.swing.JFXPanel;
 import javafx.geometry.Orientation;
+import javafx.geometry.Point2D;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
+import mpsviewer.controller.CanvasContainerController;
 
 
 import javax.swing.SwingUtilities;
@@ -34,13 +39,12 @@ import javax.swing.SwingUtilities;
 
 public class FxWrapper {
     private ExecutorService executor;
-
     private ExecutorService conExecutor;
-
-
     private NodeHandler nodehandler;
     private ObservableList<NodeItem> listViewItems;
     private BorderPane bp;
+    private Parent root;
+    private CanvasContainerController controller;
     private JFXPanel fxPanel;
     private VFlow flow;
     private ScalableContentPane canvas;
@@ -68,10 +72,77 @@ public class FxWrapper {
         fxPanel = new JFXPanel();
         fxPanel.setVisible(true);
         container.add(fxPanel, BorderLayout.CENTER);
-        bp = new BorderPane();
-        initListView();
+        controller = new CanvasContainerController();
 
-        //TestItem
+        initListView();
+        initCanvas();
+        initFlow();
+
+
+        Scene scene = new Scene(bp);
+        //File f = new File("test.css");
+        File f = new File("test.css");
+        String fileURI = f.toURI().toString();
+        scene.getStylesheets().clear();
+        scene.getStylesheets().add(fileURI);
+
+        fxPanel.setScene(scene);
+    }
+
+    private void initListView() {
+        listViewItems = FXCollections.observableArrayList();
+        listView = new ListView<>(listViewItems);
+        listView.setCellFactory(param -> new MyCell());
+        listView.setOrientation(Orientation.VERTICAL);
+    }
+
+    private void initCanvas() {
+        canvas = new MPSCanvas(this);
+        fXSkinFactory = new FXValueSkinFactory( canvas.getContent());
+        fXSkinFactory.addSkinClassForValueType(NodeItem.class, MPSConceptSkin.class);
+        bp = new BorderPane();
+        bp.setLeft(listView);
+        root = controller.init();
+        controller.configure(canvas);
+        bp.setCenter(root);
+    }
+
+    private void initFlow(){
+
+        Platform.runLater(() -> {
+            System.out.println("muh");
+            flow = FlowFactory.newFlow();
+            flow.getNodes().addListener((ListChangeListener<VNode>) c -> {
+                while (c.next()) {
+                    if (c.wasPermutated()) {
+                        for (int i = c.getFrom(); i < c.getTo(); ++i) {
+                        }
+                    } else if (c.wasUpdated()) {
+                        for (int i = c.getFrom(); i < c.getTo(); ++i) {
+                        }
+                    } else {
+                        for (VNode removedItem : c.getRemoved()) {
+                            if (deleteNode) nodehandler.nodeDeleted(removedItem.getId());
+                        }
+                        for (VNode addedItem : c.getAddedSubList()) {
+
+                        }
+                    }
+                }
+            });
+
+            startTestItems();
+
+            flow.setVisible(true);
+
+
+            //test Node
+
+
+        });
+    }
+
+    private void startTestItems(){
         NodeItem testItem = new NodeItem();
         testItem.setName("test NAME");
         testItem.setId("test ID");
@@ -89,89 +160,30 @@ public class FxWrapper {
         testItem.addPort(new Port("testOut", "double", "in"));
         testItem.addPort(new Port("testOut", "double", "in"));
         testItem.addPort(new Port("testOut", "double", "in"));
-
         listViewItems.add(testItem);
+        n = flow.newNode();
+        n.getValueObject().setValue(testItem);
+        Connector cn = n.addInput("muh");
+        Connector cn5 = n.addInput("muh");
+        Connector cn3 = n.addInput("muh");
+        Connector cn4 = n.addInput("muh");
+        cn.setLocalId("test1");
+        cn.getValueObject().setValue(testItem);
+        n.setId("test");
+        System.out.println("TYPE " + cn.getType());
+        System.out.println("ID " + cn.getId());
+        n2 = flow.newNode();
+        n2.setId("test2");
+        Connector cn2 = n2.addOutput("muh");
+        n2.getValueObject().setValue(testItem);
+        cn2.setLocalId("test2");
+        cn2.getValueObject().setValue(testItem);
+        System.out.println(cn2.getId());
 
-        //Node Change Listener
-        Platform.runLater(() -> {
-            flow = FlowFactory.newFlow();
-
-            flow.getNodes().addListener((ListChangeListener<VNode>) c -> {
-                while (c.next()) {
-                    if (c.wasPermutated()) {
-                        for (int i = c.getFrom(); i < c.getTo(); ++i) {
-                            System.out.println("Permuted: " + i + " " + flow.getNodes().get(i));
-                        }
-                    } else if (c.wasUpdated()) {
-                        for (int i = c.getFrom(); i < c.getTo(); ++i) {
-                            System.out.println("Updated: " + i + " " + flow.getNodes().get(i));
-                        }
-                    } else {
-                        for (VNode removedItem : c.getRemoved()) {
-                            if (deleteNode) nodehandler.nodeDeleted(removedItem.getId());
-                        }
-                        for (VNode addedItem : c.getAddedSubList()) {
-
-                        }
-                    }
-                }
-            });
-
-            flow.setVisible(true);
-            initCanvas();
-
-            //test Node
-            n = flow.newNode();
-            n.getValueObject().setValue(testItem);
-            Connector cn = n.addInput("muh");
-            Connector cn5 = n.addInput("muh");
-            Connector cn3 = n.addInput("muh");
-            Connector cn4 = n.addInput("muh");
-            cn.setLocalId("test1");
-            cn.getValueObject().setValue(testItem);
-            n.setId("test");
-            System.out.println("TYPE " + cn.getType());
-            System.out.println("ID " + cn.getId());
-            n2 = flow.newNode();
-            n2.setId("test2");
-            Connector cn2 = n2.addOutput("muh");
-            n2.getValueObject().setValue(testItem);
-            cn2.setLocalId("test2");
-            cn2.getValueObject().setValue(testItem);
-            System.out.println(cn2.getId());
-
-
-            flow.addSkinFactories(fXSkinFactory);
-            bp.setLeft(listView);
-            //MagnifierPane magnifierPane = new MagnifierPane();
-            //magnifierPane.setScopeLinesVisible(true);
-            //magnifierPane.getChildren().add(bp);
-            bp.setCenter(canvas);
-            Scene scene = new Scene(bp);
-
-            File f = new File("test.css");
-            String fileURI = f.toURI().toString();
-            scene.getStylesheets().clear();
-            scene.getStylesheets().add(fileURI);
-
-            fxPanel.setScene(scene);
-
-
-        });
+        flow.addSkinFactories(fXSkinFactory);
     }
 
-    private void initListView() {
-        listViewItems = FXCollections.observableArrayList();
-        listView = new ListView<>(listViewItems);
-        listView.setCellFactory(param -> new MyCell());
-        listView.setOrientation(Orientation.VERTICAL);
-    }
 
-    private void initCanvas() {
-        canvas = new MPSCanvas(this);
-        fXSkinFactory = new FXValueSkinFactory( canvas.getContent());
-        fXSkinFactory.addSkinClassForValueType(NodeItem.class, MPSConceptSkin.class);
-    }
 
     public void sytemUpdate() {
 
@@ -215,11 +227,8 @@ public class FxWrapper {
         deleteNode = true;
     }
 
-
     public void addNode(String name, String type) {
-
         Platform.runLater(() -> {
-            System.out.println("GIBTS NOCH NICHT");
             listViewItems.forEach(nodeItem -> {
 
                 if (nodeItem.getName() == type) {
@@ -264,7 +273,6 @@ public class FxWrapper {
         });
 
     }
-
 
     public void addNodeAndCon(final Map<String, String> nodes, final ArrayList<String[]> connections) {
 
@@ -471,8 +479,8 @@ public class FxWrapper {
                     if (!nodesx.isEmpty()) {
                         System.out.println("MUUUHKHUHUHUHUHUHUH");
 
-                            Connection c = FxWrapper.this.flow.connect(((VNode) nodesx.get(FxWrapper.this.getNodeIndex(strings[0]))).getOutputs().get(FxWrapper.this.getNodeOutputPortIndex(FxWrapper.this.getNodeIndex(strings[0]), strings[0] + ":c:" + strings[1])), ((VNode) nodesx.get(FxWrapper.this.getNodeIndex(strings[2]))).getInputs().get(FxWrapper.this.getNodeInputPortIndex(FxWrapper.this.getNodeIndex(strings[2]), strings[2] + ":c:" + strings[3]))).getConnection();
-                            c.setId(strings[4]);
+                        Connection c = FxWrapper.this.flow.connect(((VNode) nodesx.get(FxWrapper.this.getNodeIndex(strings[0]))).getOutputs().get(FxWrapper.this.getNodeOutputPortIndex(FxWrapper.this.getNodeIndex(strings[0]), strings[0] + ":c:" + strings[1])), ((VNode) nodesx.get(FxWrapper.this.getNodeIndex(strings[2]))).getInputs().get(FxWrapper.this.getNodeInputPortIndex(FxWrapper.this.getNodeIndex(strings[2]), strings[2] + ":c:" + strings[3]))).getConnection();
+                        c.setId(strings[4]);
                         FxWrapper.this.flow.removeSkinFactories(getfXSkinFactory());
                         FxWrapper.this.flow.addSkinFactories(getfXSkinFactory());
 
@@ -491,21 +499,6 @@ public class FxWrapper {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     }
 
@@ -605,7 +598,38 @@ public class FxWrapper {
         return deleteNode;
     }
 
+    private static Point2D figureScrollOffset(Node scrollContent, ScrollPane scroller) {
+        double extraWidth = scrollContent.getLayoutBounds().getWidth() - scroller.getViewportBounds().getWidth();
+        double hScrollProportion = (scroller.getHvalue() - scroller.getHmin()) / (scroller.getHmax() - scroller.getHmin());
+        double scrollXOffset = hScrollProportion * Math.max(0, extraWidth);
+        double extraHeight = scrollContent.getLayoutBounds().getHeight() - scroller.getViewportBounds().getHeight();
+        double vScrollProportion = (scroller.getVvalue() - scroller.getVmin()) / (scroller.getVmax() - scroller.getVmin());
+        double scrollYOffset = vScrollProportion * Math.max(0, extraHeight);
+        return new Point2D(scrollXOffset, scrollYOffset);
+    }
+
+    private static void repositionscroller(Node scrollContent, ScrollPane scroller, double scaleFactor, Point2D scrollOffset) {
+        double scrollXOffset = scrollOffset.getX();
+        double scrollYOffset = scrollOffset.getY();
+        double extraWidth = scrollContent.getLayoutBounds().getWidth() - scroller.getViewportBounds().getWidth();
+        if (extraWidth > 0) {
+            double halfWidth = scroller.getViewportBounds().getWidth() / 2 ;
+            double newScrollXOffset = (scaleFactor - 1) *  halfWidth + scaleFactor * scrollXOffset;
+            scroller.setHvalue(scroller.getHmin() + newScrollXOffset * (scroller.getHmax() - scroller.getHmin()) / extraWidth);
+        } else {
+            scroller.setHvalue(scroller.getHmin());
+        }
+        double extraHeight = scrollContent.getLayoutBounds().getHeight() - scroller.getViewportBounds().getHeight();
+        if (extraHeight > 0) {
+            double halfHeight = scroller.getViewportBounds().getHeight() / 2 ;
+            double newScrollYOffset = (scaleFactor - 1) * halfHeight + scaleFactor * scrollYOffset;
+            scroller.setVvalue(scroller.getVmin() + newScrollYOffset * (scroller.getVmax() - scroller.getVmin()) / extraHeight);
+        } else {
+            scroller.setHvalue(scroller.getHmin());
+        }
+    }
 
 }
+
 
 
