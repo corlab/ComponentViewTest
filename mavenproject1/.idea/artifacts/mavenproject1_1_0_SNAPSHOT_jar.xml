@@ -2,7 +2,7 @@
   <artifact type="jar" name="mavenproject1-1.0-SNAPSHOT:jar">
     <output-path>$PROJECT_DIR$/classes/artifacts/mavenproject1_1_0_SNAPSHOT_jar</output-path>
     <root id="archive" name="mavenproject1-1.0-SNAPSHOT_jar.jar">
-      <element id="module-output" name="mavenproject1" />
+      <element id="module-output" name="ComponentViewTest" />
       <element id="extracted-dir" path="$USER_HOME$/Downloads/VWorkflows-master/classes/artifacts/VWorkflows_master_jar/VWorkflows-master.jar" path-in-jar="/" />
     </root>
   </artifact>
