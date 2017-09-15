@@ -7,6 +7,7 @@ import javafx.beans.property.DoubleProperty;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
+import javafx.scene.transform.NonInvertibleTransformException;
 import mpsviewer.wrapper.FxWrapper;
 
 /**
@@ -66,12 +67,15 @@ public class MPSCanvas extends ScalableContentPane {
                         vn.getValueObject().setValue(nodeItemToken);
                         vn.setId(fxWrapper.getNodehandler().nodeCreated(vn.getId(), nodeItemToken.getName()));
                         //TODO
-                        System.out.println(this.getScaleY());
-                        System.out.println(fxWrapper.getFlow().getModel().getX());
-                        System.out.println(event.getY());
 
-                        vn.setY(event.getY());
-                        vn.setX(event.getX());
+                        try {
+                            vn.setY(this.getContentScaleTransform().inverseTransform(event.getX(), event.getY()).getY());
+                            vn.setX(this.getContentScaleTransform().inverseTransform(event.getX(), event.getY()).getX());
+                        } catch (NonInvertibleTransformException e) {
+                            e.printStackTrace();
+                        }
+
+
 
 
                         //Generate ports

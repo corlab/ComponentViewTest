@@ -31,6 +31,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
+import javafx.util.Pair;
 import mpsviewer.controller.CanvasContainerController;
 import mpsviewer.model.NodeItem;
 import mpsviewer.model.Port;
@@ -599,6 +600,18 @@ public class FxWrapper {
         });
         return listViewItems.isEmpty();
 
+    }
+
+    public void getBreakpointPositions(){
+        flow.getConnectionSkinMapUnsynch(fXSkinFactory).forEach((s, connectionSkin) -> {
+            System.out.println(connectionSkin.getReceiver());
+            System.out.println(connectionSkin.getSender());
+            ArrayList<Pair> points = connectionSkin.getPoints();
+            points.forEach(pair -> {
+                System.out.println(pair.getKey());
+                System.out.println(pair.getValue());
+            });
+        });
     }
 
     public boolean isDeleteNode() {
