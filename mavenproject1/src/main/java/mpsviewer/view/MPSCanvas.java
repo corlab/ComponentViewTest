@@ -130,15 +130,13 @@ public class MPSCanvas extends ScalableContentPane {
         this.setOnMouseClicked(mouseEvent -> {
             fxWrapper.getFlow().getNodes().forEach(vNode -> vNode.requestSelection(false));
             if (mouseEvent.getButton() == MouseButton.MIDDLE) {
-                fxWrapper.getFlow().getNodes().forEach(vNode -> {
+                /*fxWrapper.getFlow().getNodes().forEach(vNode -> {
                     vNode.setX(0);
                     vNode.setY(0);
-                });
-            }
-            if (mouseEvent.getButton() == MouseButton.SECONDARY) {
-
+                });*/
 
             }
+
 
         });
     }

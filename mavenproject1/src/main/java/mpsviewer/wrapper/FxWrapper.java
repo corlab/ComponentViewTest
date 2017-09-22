@@ -11,6 +11,7 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 import eu.mihosoft.vrl.workflow.*;
@@ -321,7 +322,7 @@ public class FxWrapper {
                                         input.addConnectionEventListener(connectionEvent -> {
 
                                             if (isDeleteNode() && connectionEvent.getEventType().getName().equals("ConnectionEvent:ADD")) {
-                                                System.out.println("ADDED CONNECTION");
+//                                                System.out.println("ADDED CONNECTION");
                                                 String targetNodeID = connectionEvent.getReceiverConnector().getNode().getId();
                                                 String sourceNodeID = connectionEvent.getSenderConnector().getNode().getId();
                                                 String targetPortname = connectionEvent.getReceiverConnector().getLocalId();
@@ -335,7 +336,7 @@ public class FxWrapper {
                                                 getNodehandler().connectionDeleted(connectionEvent.getConnection().getId());
                                             }
                                         });
-                                        System.out.println("Port" + port.getName());
+//                                        System.out.println("Port" + port.getName());
                                         input.setLocalId(port.getName());
 
                                     } else {
@@ -363,14 +364,29 @@ public class FxWrapper {
                     if (!nodesx.isEmpty()) {
                         Connection c = FxWrapper.this.flow.connect(((VNode) nodesx.get(FxWrapper.this.getNodeIndex(strings[0]))).getOutputs().get(FxWrapper.this.getNodeOutputPortIndex(FxWrapper.this.getNodeIndex(strings[0]), strings[0] + ":c:" + strings[1])), ((VNode) nodesx.get(FxWrapper.this.getNodeIndex(strings[2]))).getInputs().get(FxWrapper.this.getNodeInputPortIndex(FxWrapper.this.getNodeIndex(strings[2]), strings[2] + ":c:" + strings[3]))).getConnection();
                         c.setId(strings[4]);
+
                         FxWrapper.this.flow.removeSkinFactories(getfXSkinFactory());
                         FxWrapper.this.flow.addSkinFactories(getfXSkinFactory());
+
 
                     }
                 });
 
-                FxWrapper.this.flow.removeSkinFactories(getfXSkinFactory());
-                FxWrapper.this.flow.addSkinFactories(getfXSkinFactory());
+                flow.getConnectionSkinMapUnsynch(fXSkinFactory).forEach((s, connectionSkin) -> {
+                    String id = s.substring(s.indexOf("=") + 1, s.indexOf(";"));
+                    if(!id.equals("0")) {
+                        ArrayList<mpsviewer.model.Pair> coords = nodehandler.getBreakPoints(id);
+
+                        ArrayList<Pair<Integer,Integer>> coordList = new ArrayList<>();
+                        coords.forEach(pair -> {
+                            System.out.println(pair.getFst() +" "+ pair.getSnd());
+                            coordList.add(new Pair(Double.parseDouble(pair.getFst()),Double.parseDouble(pair.getSnd())));
+                        });
+                        connectionSkin.addPoints(coordList);
+                    }
+                });
+
+
                 deleteNode = true;
             }
         });
@@ -552,7 +568,7 @@ public class FxWrapper {
 
     private int getNodeInputPortIndex(int nodeindex, String portID) {
         ObservableList<VNode> nodes = flow.getNodes();
-        System.out.println(nodes.get(nodeindex).getInputs().size());
+//        System.out.println(nodes.get(nodeindex).getInputs().size());
         for (int i = 0; i <= nodes.get(nodeindex).getInputs().size(); i++) {
             if (nodes.get(nodeindex).getInputs().get(i).getId().equals(portID)) {
                 return i;
@@ -602,17 +618,36 @@ public class FxWrapper {
 
     }
 
-    public void getBreakpointPositions(){
+    public Map<String,ArrayList<mpsviewer.model.Pair>> getBreakpointPositions(){
+        Map<String, ArrayList<mpsviewer.model.Pair>> connections = new HashMap<>();
         flow.getConnectionSkinMapUnsynch(fXSkinFactory).forEach((s, connectionSkin) -> {
-            System.out.println(connectionSkin.getReceiver());
-            System.out.println(connectionSkin.getSender());
+            ArrayList<mpsviewer.model.Pair> coords = new ArrayList<>();
+            String id = s.substring(s.indexOf("=") + 1, s.indexOf(";"));
+
             ArrayList<Pair> points = connectionSkin.getPoints();
-            points.forEach(pair -> {
-                System.out.println(pair.getKey());
-                System.out.println(pair.getValue());
-            });
+            if(!id.equals("0")) {
+                if(!points.isEmpty()) {
+                    System.out.println("CONNECTION ADDED WITH BREAKPOINTS");
+                    points.forEach(pair -> {
+                        System.out.println(pair.getValue());
+                        coords.add(new mpsviewer.model.Pair(pair.getKey().toString(),pair.getValue().toString()));
+                        connections.put(id,coords);
+                    });
+                } else {
+                    System.out.println("CONNECTION WITH 0 BREAKPOINTS");
+                    connections.put(id,null);
+
+                }
+
+
+            }
+
+
         });
+        return connections;
     }
+
+
 
     public boolean isDeleteNode() {
         return deleteNode;

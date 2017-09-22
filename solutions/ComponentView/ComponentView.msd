@@ -6,14 +6,10 @@
     </modelRoot>
     <modelRoot contentPath="${module}" type="java_classes">
       <sourceRoot location="libs/mavenproject1-1.0-SNAPSHOT.jar" />
-      <sourceRoot location="libs/vworkflows-core-0.2.3.jar" />
-      <sourceRoot location="libs/vworkflows-fx-0.2.3.jar" />
     </modelRoot>
   </models>
   <stubModelEntries>
     <stubModelEntry path="${module}/libs/mavenproject1-1.0-SNAPSHOT.jar" />
-    <stubModelEntry path="${module}/libs/vworkflows-core-0.2.3.jar" />
-    <stubModelEntry path="${module}/libs/vworkflows-fx-0.2.3.jar" />
   </stubModelEntries>
   <sourcePath />
   <dependencies>

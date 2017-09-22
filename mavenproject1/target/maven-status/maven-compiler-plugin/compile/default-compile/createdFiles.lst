@@ -19,6 +19,7 @@ mpsviewer/wrapper/FxWrapper$2.class
 mpsviewer/wrapper/NodeHandler.class
 mpsviewer/view/CustomFlowNodeSkinNew.class
 mpsviewer/model/Property.class
+mpsviewer/model/Pair.class
 mpsviewer/wrapper/FxWrapper$5.class
 mpsviewer/wrapper/MPSTest.class
 mpsviewer/view/CustomConnectionSkin.class

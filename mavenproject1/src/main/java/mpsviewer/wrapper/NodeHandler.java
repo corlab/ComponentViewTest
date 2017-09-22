@@ -1,6 +1,7 @@
 package mpsviewer.wrapper;
 
 import mpsviewer.model.NodeItem;
+import mpsviewer.model.Pair;
 
 import java.util.ArrayList;
 
@@ -19,6 +20,8 @@ public interface NodeHandler {
     double getNodeX(String mpsID);
     double getNodeY(String mpsID);
     String getNodeName(String mpsID);
+    ArrayList<Pair> getBreakPoints(String id);
+
 
     ArrayList<NodeItem> getNodes();
 }

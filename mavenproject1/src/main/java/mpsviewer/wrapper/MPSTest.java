@@ -1,6 +1,7 @@
 package mpsviewer.wrapper;
 
 import mpsviewer.model.NodeItem;
+import mpsviewer.model.Pair;
 import mpsviewer.wrapper.NodeHandler;
 
 import java.util.ArrayList;
@@ -73,6 +74,11 @@ public class MPSTest implements NodeHandler {
 
     @Override
     public String getNodeName(String mpsID) {
+        return null;
+    }
+
+    @Override
+    public ArrayList<Pair> getBreakPoints(String id) {
         return null;
     }
 
