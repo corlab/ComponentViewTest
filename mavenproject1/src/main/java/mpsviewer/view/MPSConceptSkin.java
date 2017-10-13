@@ -8,10 +8,12 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import mpsviewer.model.NodeItem;
 
 /**
@@ -65,10 +67,18 @@ public class MPSConceptSkin extends CustomFlowNodeSkinNew {
         vBox.getChildren().add(properties);
 
         getModel().getConnectors().forEach(connector -> {
-            Label label = new Label(connector.getType());
+            Label label = new Label(connector.getLocalId());
+
+            Tooltip tooltip = new Tooltip();
+            tooltip.setText(connector.getType());
+            label.setTooltip(tooltip);
             label.setTextFill(Color.ANTIQUEWHITE);
+            Text text = new Text(label.getText());
+            text.setFont(label.getFont());
+            double width = text.getBoundsInLocal().getWidth();
+
             if(connector.isInput()) {
-                label.setLayoutX(-getConnectorShape(connector).getRadius() - label.getText().length()*2);
+                label.setLayoutX(- width);
 
             }
 
@@ -76,6 +86,7 @@ public class MPSConceptSkin extends CustomFlowNodeSkinNew {
                 label.setLayoutX(getConnectorShape(connector).getRadius());
             }
             (getConnectorShape(connector)).addToRegion(label);
+
         });
 
 

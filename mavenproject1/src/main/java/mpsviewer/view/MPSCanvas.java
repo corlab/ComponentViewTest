@@ -19,11 +19,11 @@ public class MPSCanvas extends ScalableContentPane {
     public MPSCanvas(FxWrapper fxWrapper) {
         this.fxWrapper = fxWrapper;
         this.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
-        createDragDropEvents();
+        //createDragDropEvents();
     }
 
     public void createDragDropEvents() {
-        this.setOnDragOver(event -> {
+        this.getParent().setOnDragOver(event -> {
             Dragboard db = event.getDragboard();
 
             if (db.hasString()) {
@@ -33,7 +33,7 @@ public class MPSCanvas extends ScalableContentPane {
             }
 
         });
-        this.setOnDragDropped(event -> {
+        this.getParent().setOnDragDropped(event -> {
             Dragboard db = event.getDragboard();
             boolean success = false;
             if (db.hasString()) {
@@ -66,7 +66,6 @@ public class MPSCanvas extends ScalableContentPane {
 
                         vn.getValueObject().setValue(nodeItemToken);
                         vn.setId(fxWrapper.getNodehandler().nodeCreated(vn.getId(), nodeItemToken.getName()));
-                        //TODO
 
                         try {
                             vn.setY(this.getContentScaleTransform().inverseTransform(event.getX(), event.getY()).getY());
@@ -130,10 +129,7 @@ public class MPSCanvas extends ScalableContentPane {
         this.setOnMouseClicked(mouseEvent -> {
             fxWrapper.getFlow().getNodes().forEach(vNode -> vNode.requestSelection(false));
             if (mouseEvent.getButton() == MouseButton.MIDDLE) {
-                /*fxWrapper.getFlow().getNodes().forEach(vNode -> {
-                    vNode.setX(0);
-                    vNode.setY(0);
-                });*/
+                fxWrapper.printCons();
 
             }
 

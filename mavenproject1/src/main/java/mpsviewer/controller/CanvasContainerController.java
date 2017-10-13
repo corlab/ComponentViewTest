@@ -186,4 +186,8 @@ public class CanvasContainerController {
 
     }
 
+    public StackPane getMainPane(){
+        return mainPane;
+    }
+
 }

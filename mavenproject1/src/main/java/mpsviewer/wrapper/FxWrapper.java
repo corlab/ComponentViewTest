@@ -95,6 +95,8 @@ public class FxWrapper {
         scene.getStylesheets().add(fileURI);
 
         fxPanel.setScene(scene);
+        ((MPSCanvas)canvas).createDragDropEvents();
+
     }
 
     private void initListView() {
@@ -112,6 +114,7 @@ public class FxWrapper {
         bp.setLeft(listView);
         root = controller.init();
         controller.configure(canvas);
+
         bp.setCenter(root);
     }
 
@@ -172,10 +175,13 @@ public class FxWrapper {
         n = flow.newNode();
         canvas.setAutoRescale(true);
         n.getValueObject().setValue(testItem);
-        Connector cn = n.addInput("muh");
-        Connector cn5 = n.addInput("muh");
-        Connector cn3 = n.addInput("muh");
-        Connector cn4 = n.addInput("muh");
+        Connector cn = n.addInput("double");
+        cn.setLocalId("test");
+        Connector cn5 = n.addInput("float");
+        cn5.setLocalId("testlong");
+        Connector cn3 = n.addInput("char");
+        cn3.setLocalId("testlonger");
+        Connector cn4 = n.addInput("test");
         cn.setLocalId("test1");
         cn.getValueObject().setValue(testItem);
         n.setId("test");
@@ -183,7 +189,7 @@ public class FxWrapper {
         System.out.println("ID " + cn.getId());
         n2 = flow.newNode();
         n2.setId("test2");
-        Connector cn2 = n2.addOutput("muh");
+        Connector cn2 = n2.addOutput("double");
         n2.getValueObject().setValue(testItem);
         cn2.setLocalId("test2");
         cn2.getValueObject().setValue(testItem);
@@ -237,10 +243,74 @@ public class FxWrapper {
     }
 
     public void addNode(String name, String type) {
+        System.out.println("ADDED NODE");
         Platform.runLater(() -> {
-            listViewItems.forEach(nodeItem -> {
 
+
+            if(nodeExists(name)) return;
+            listViewItems.forEach(nodeItem -> {
                 if (nodeItem.getName() == type) {
+                    VNode vn = FxWrapper.this.flow.newNode();
+
+
+                    vn.setId(name);
+                    vn.setTitle(nodehandler.getNodeName(vn.getId()));
+                    vn.setX(nodehandler.getNodeX(vn.getId()));
+                    vn.setY(nodehandler.getNodeY(vn.getId()));
+                    vn.titleProperty().addListener((observableValue, s, t1) -> {
+                        nodehandler.nameChanged(t1, vn.getId());
+                    });
+                    vn.getValueObject().setValue(nodeItem);
+                    vn.xProperty().addListener(observable -> {
+                        DoubleProperty dp = (DoubleProperty) observable;
+                        nodehandler.changePositionPersistenceX(dp.doubleValue(), vn.getId());
+                    });
+
+                    vn.yProperty().addListener(observable -> {
+                        DoubleProperty dp = (DoubleProperty) observable;
+                        nodehandler.changePositionPersistenceY(dp.doubleValue(), vn.getId());
+                    });
+
+                    nodeItem.getPorts().forEach(port -> {
+                        if (port.getOutIn() == "in") {
+
+                            Connector input = vn.addInput(port.getType());
+
+
+                            input.addConnectionEventListener(connectionEvent -> {
+
+                                if (isDeleteNode() && connectionEvent.getEventType().getName().equals("ConnectionEvent:ADD")) {
+                                    System.out.println("ADDED CONNECTION");
+                                    String targetNodeID = connectionEvent.getReceiverConnector().getNode().getId();
+                                    String sourceNodeID = connectionEvent.getSenderConnector().getNode().getId();
+                                    String targetPortname = connectionEvent.getReceiverConnector().getLocalId();
+                                    String sourcePortname = connectionEvent.getSenderConnector().getLocalId();
+                                    String id = getNodehandler().nodesConnected(targetNodeID, sourceNodeID, sourcePortname, targetPortname, connectionEvent.getConnection().getId());
+                                    connectionEvent.getConnection().setId(id);
+
+
+                                }
+                                if (isDeleteNode() && connectionEvent.getEventType().getName().equals("ConnectionEvent:REMOVE")) {
+                                    getNodehandler().connectionDeleted(connectionEvent.getConnection().getId());
+                                }
+                            });
+//                                        System.out.println("Port" + port.getName());
+                            input.setLocalId(port.getName());
+
+                        } else {
+
+                            Connector output = vn.addOutput(port.getType());
+                            output.setLocalId(port.getName());
+                        }
+
+
+                    });
+                }
+
+                FxWrapper.this.flow.removeSkinFactories(getfXSkinFactory());
+                FxWrapper.this.flow.addSkinFactories(getfXSkinFactory());
+
+                /*if (nodeItem.getName() == type) {
                     VNode vn = flow.newNode();
                     vn.setTitle(name);
                     vn.setId(name);
@@ -273,10 +343,12 @@ public class FxWrapper {
                             output.setLocalId(port.getName());
                         }
 
+
+
                     });
-                }
-                flow.removeSkinFactories(getfXSkinFactory());
-                flow.addSkinFactories(getfXSkinFactory());
+                }*/
+
+
 
             });
         });
@@ -322,7 +394,7 @@ public class FxWrapper {
                                         input.addConnectionEventListener(connectionEvent -> {
 
                                             if (isDeleteNode() && connectionEvent.getEventType().getName().equals("ConnectionEvent:ADD")) {
-//                                                System.out.println("ADDED CONNECTION");
+                                                System.out.println("ADDED CONNECTION IN WRAPPER");
                                                 String targetNodeID = connectionEvent.getReceiverConnector().getNode().getId();
                                                 String sourceNodeID = connectionEvent.getSenderConnector().getNode().getId();
                                                 String targetPortname = connectionEvent.getReceiverConnector().getLocalId();
@@ -372,16 +444,19 @@ public class FxWrapper {
                     }
                 });
 
+
                 flow.getConnectionSkinMapUnsynch(fXSkinFactory).forEach((s, connectionSkin) -> {
                     String id = s.substring(s.indexOf("=") + 1, s.indexOf(";"));
                     if(!id.equals("0")) {
                         ArrayList<mpsviewer.model.Pair> coords = nodehandler.getBreakPoints(id);
 
                         ArrayList<Pair<Integer,Integer>> coordList = new ArrayList<>();
-                        coords.forEach(pair -> {
-                            System.out.println(pair.getFst() +" "+ pair.getSnd());
-                            coordList.add(new Pair(Double.parseDouble(pair.getFst()),Double.parseDouble(pair.getSnd())));
-                        });
+                        if(coords!=null) {
+                            coords.forEach(pair -> {
+                                System.out.println(pair.getFst() + " " + pair.getSnd());
+                                coordList.add(new Pair(Double.parseDouble(pair.getFst()), Double.parseDouble(pair.getSnd())));
+                            });
+                        }
                         connectionSkin.addPoints(coordList);
                     }
                 });
@@ -437,6 +512,7 @@ public class FxWrapper {
                                     if (port.getOutIn() == "in") {
 
                                         Connector input = vn.addInput(port.getType());
+                                        input.setLocalId(port.getName());
 
 
                                         input.addConnectionEventListener(connectionEvent -> {
@@ -501,7 +577,6 @@ public class FxWrapper {
                 protected Object call() throws Exception {
                     ObservableList nodesx = FxWrapper.this.flow.getNodes();
                     if (!nodesx.isEmpty()) {
-                        System.out.println("MUUUHKHUHUHUHUHUHUH");
 
                         Connection c = FxWrapper.this.flow.connect(((VNode) nodesx.get(FxWrapper.this.getNodeIndex(strings[0]))).getOutputs().get(FxWrapper.this.getNodeOutputPortIndex(FxWrapper.this.getNodeIndex(strings[0]), strings[0] + ":c:" + strings[1])), ((VNode) nodesx.get(FxWrapper.this.getNodeIndex(strings[2]))).getInputs().get(FxWrapper.this.getNodeInputPortIndex(FxWrapper.this.getNodeIndex(strings[2]), strings[2] + ":c:" + strings[3]))).getConnection();
                         c.setId(strings[4]);
@@ -527,21 +602,107 @@ public class FxWrapper {
     }
 
 
-    public void addConnection(String sourceID, String sourcePortID, String targetID, String targetPortID) {
+    public void addConnection(String conID,String sourceID, String sourcePortID, String targetID, String targetPortID) {
+        System.out.println("ADD CONNECTION");
+        if(connectionExists(sourceID,sourcePortID,targetID,targetPortID)) return;
+        Platform.runLater(() -> {
+            ObservableList<VNode> nodes = flow.getNodes();
+            if (nodes.isEmpty()) return;
+
+            Connection c = flow.connect(nodes.get(getNodeIndex(sourceID)).getOutputs().get(getNodeOutputPortIndex(getNodeIndex(sourceID), sourceID + ":c:" + sourcePortID))
+                    , nodes.get(getNodeIndex(targetID)).getInputs().get(getNodeInputPortIndex(getNodeIndex(targetID), targetID + ":c:" + targetPortID))).getConnection();
+            //flow.connect(nodes.get(getNodeIndex(sourceID)).getOutputs().get(getNodeOutputPortIndex(getNodeIndex(sourceID),sourceID+":c:"+sourcePortID))
+            // ,nodes.get(getNodeIndex(targetID)).getInputs().get(getNodeInputPortIndex(getNodeIndex(targetID),targetID+":c:"+targetPortID)));
+            c.setId(conID);
+
+
+
+        });
+
+    }
+
+    public void addConnection2(String conID,String sourceID, String sourcePortID, String targetID, String targetPortID) {
+
         Platform.runLater(() -> {
             ObservableList<VNode> nodes = flow.getNodes();
             if (nodes.isEmpty()) return;
 
             //flow.connect(nodes.get(getNodeIndex(sourceID)).getOutputs().get(getNodeOutputPortIndex(getNodeIndex(sourceID),sourceID+":c:"+sourcePortID))
             // ,nodes.get(getNodeIndex(targetID)).getInputs().get(getNodeInputPortIndex(getNodeIndex(targetID),targetID+":c:"+targetPortID)));
-            System.out.println(flow.connect(nodes.get(getNodeIndex(sourceID)).getOutputs().get(getNodeOutputPortIndex(getNodeIndex(sourceID), sourceID + ":c:" + sourcePortID))
+
+            System.out.println(flow.tryConnect(nodes.get(getNodeIndex(sourceID)).getOutputs().get(getNodeOutputPortIndex(getNodeIndex(sourceID), sourceID + ":c:" + sourcePortID))
+                    , nodes.get(getNodeIndex(targetID)).getInputs().get(getNodeInputPortIndex(getNodeIndex(targetID), targetID + ":c:" + targetPortID))).getStatus().getMessage());
+
+            System.out.println(flow.tryConnect(nodes.get(getNodeIndex(sourceID)).getOutputs().get(getNodeOutputPortIndex(getNodeIndex(sourceID), sourceID + ":c:" + sourcePortID))
+                    , nodes.get(getNodeIndex(targetID)).getInputs().get(getNodeInputPortIndex(getNodeIndex(targetID), targetID + ":c:" + targetPortID))).getStatus().getStatus());
+
+            System.out.println(flow.tryConnect(nodes.get(getNodeIndex(sourceID)).getOutputs().get(getNodeOutputPortIndex(getNodeIndex(sourceID), sourceID + ":c:" + sourcePortID))
                     , nodes.get(getNodeIndex(targetID)).getInputs().get(getNodeInputPortIndex(getNodeIndex(targetID), targetID + ":c:" + targetPortID))).getStatus().isCompatible());
+
+            //c.setId(conID);
+
 
         });
 
     }
 
+    public void printCons(){
+        flow.getAllConnections().forEach((s, connections) -> {
+            connections.getConnections().forEach(connection -> {
+                System.out.println(connection.getId());
+
+            });
+        });
+    }
+
+    public boolean connectionExists(String id){
+        final boolean[] exists = {false};
+        flow.getAllConnections().forEach((s, connections) -> {
+            connections.getConnections().forEach(connection -> {
+                if(connection.getId().equals(id)) {
+                    exists[0] = true;
+                    System.out.println("Connection exists !");
+                }
+            });
+        });
+        return exists[0];
+    }
+
+    public boolean nodeExists2(String id){
+        final boolean[] exists = {false};
+        flow.getNodes().forEach(vNode -> {
+            if (vNode.getId().equals(id)) exists[0] = true;
+        });
+
+        return exists[0];
+
+    }
+
+    public boolean connectionExists(String sourceID, String sourcePortID, String targetID, String targetPortID){
+        String senID = sourceID+":c:"+sourcePortID;
+        String recID = targetID+":c:"+targetPortID;
+
+        final boolean[] exists = {false};
+        flow.getAllConnections().forEach((s, connections) -> {
+            connections.getConnections().forEach(connection -> {
+                System.out.println("Reciever "+connection.getReceiver().getId() + " Sender: "+ connection.getSender().getId());
+                System.out.println("Reciever "+connection.getReceiver().getNode().getId() + " Sender: "+ connection.getSender().getId());
+                if(connection.getSender().getId().equals(senID)&&connection.getReceiver().getId().equals(recID)) {
+                    exists[0] = true;
+                    System.out.println("Connection exists !");
+                }
+                if(connection.getSender().getId().equals(senID)&&connection.getReceiver().getId().equals(recID)) {
+                    System.out.println("Connection exists ! switch" );
+                }
+            });
+        });
+        System.out.println("connectionExists :" + exists[0]);
+        return exists[0];
+    }
+
+
     public boolean nodeExists(String id) {
+
         return flow.getNodeLookup().getById(id) != null;
     }
 
@@ -588,14 +749,16 @@ public class FxWrapper {
 
     }
 
-    public void deleteConnection(String mpsID, String type) {
-        Platform.runLater(() -> {
-            Connections connections = flow.getConnections(type);
-            connections.getConnections().stream().filter(connection -> connection.getId().equals(mpsID)).forEach(connection -> connections.remove(connection));
+    public void deleteConnection(String id) {
+        System.out.println("DELETE CON");
+        flow.getAllConnections().forEach((s, connections) -> {
+            connections.getConnections().forEach(connection -> {
+                if(id.equals(connection.getId())) Platform.runLater(() -> connections.remove(connection));
+            });
         });
-
-
     }
+
+
 
     public ObservableList<NodeItem> getListViewItems() {
         return listViewItems;
@@ -627,14 +790,12 @@ public class FxWrapper {
             ArrayList<Pair> points = connectionSkin.getPoints();
             if(!id.equals("0")) {
                 if(!points.isEmpty()) {
-                    System.out.println("CONNECTION ADDED WITH BREAKPOINTS");
                     points.forEach(pair -> {
                         System.out.println(pair.getValue());
                         coords.add(new mpsviewer.model.Pair(pair.getKey().toString(),pair.getValue().toString()));
                         connections.put(id,coords);
                     });
                 } else {
-                    System.out.println("CONNECTION WITH 0 BREAKPOINTS");
                     connections.put(id,null);
 
                 }
