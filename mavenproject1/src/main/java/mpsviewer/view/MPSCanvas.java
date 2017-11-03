@@ -1,14 +1,16 @@
 package mpsviewer.view;
 
-import eu.mihosoft.vrl.workflow.Connector;
-import eu.mihosoft.vrl.workflow.VNode;
+import eu.mihosoft.vrl.workflow.*;
 import eu.mihosoft.vrl.workflow.fx.ScalableContentPane;
 import javafx.beans.property.DoubleProperty;
-import javafx.scene.input.Dragboard;
+import javafx.beans.property.ReadOnlyProperty;
+import javafx.collections.ObservableList;
+import javafx.scene.input.*;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.TransferMode;
 import javafx.scene.transform.NonInvertibleTransformException;
 import mpsviewer.wrapper.FxWrapper;
+
+import java.util.Collection;
 
 /**
  * Created by jseidelmann on 31.03.17.
@@ -129,11 +131,21 @@ public class MPSCanvas extends ScalableContentPane {
         this.setOnMouseClicked(mouseEvent -> {
             fxWrapper.getFlow().getNodes().forEach(vNode -> vNode.requestSelection(false));
             if (mouseEvent.getButton() == MouseButton.MIDDLE) {
-                fxWrapper.printCons();
+                //fxWrapper.printCons();
+                System.out.println("muhmuh");
 
             }
 
 
+        });
+        this.setOnKeyTyped(keyEvent -> {
+            if(keyEvent.isControlDown() && keyEvent.getCode() == KeyCode.R) {
+                fxWrapper.getNodehandler().reload();
+                System.out.println("lalal");
+            }
+            if(keyEvent.isControlDown() && keyEvent.getCode() == KeyCode.S) {
+                fxWrapper.getNodehandler().reload();
+            }
         });
     }
 }

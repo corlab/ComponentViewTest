@@ -82,6 +82,16 @@ public class MPSTest implements NodeHandler {
         return null;
     }
 
+    @Override
+    public void saveData() {
+
+    }
+
+    @Override
+    public void reload() {
+
+    }
+
 
     @Override
     public ArrayList<NodeItem> getNodes() {

@@ -21,6 +21,8 @@ public interface NodeHandler {
     double getNodeY(String mpsID);
     String getNodeName(String mpsID);
     ArrayList<Pair> getBreakPoints(String id);
+    void saveData();
+    void reload();
 
 
     ArrayList<NodeItem> getNodes();

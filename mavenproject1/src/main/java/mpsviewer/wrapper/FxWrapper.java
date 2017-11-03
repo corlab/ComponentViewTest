@@ -29,9 +29,11 @@ import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.util.Pair;
 import mpsviewer.controller.CanvasContainerController;
 import mpsviewer.model.NodeItem;
@@ -48,6 +50,7 @@ import javax.swing.SwingUtilities;
 public class FxWrapper {
     private ExecutorService executor;
     private ExecutorService conExecutor;
+    private ExecutorService connectionAdder = Executors.newSingleThreadExecutor();
     private NodeHandler nodehandler;
     private ObservableList<NodeItem> listViewItems;
     private BorderPane bp;
@@ -114,7 +117,18 @@ public class FxWrapper {
         bp.setLeft(listView);
         root = controller.init();
         controller.configure(canvas);
-
+        HBox hBox = new HBox();
+        Button reload = new Button("reload");
+        reload.setOnMouseClicked(mouseEvent -> {
+            nodehandler.reload();
+        });
+        Button safe = new Button("Safe data");
+        safe.setOnMouseClicked(mouseEvent -> {
+            nodehandler.saveData();
+        });
+        hBox.getChildren().add(safe);
+        hBox.getChildren().add(reload);
+        bp.setTop(hBox);
         bp.setCenter(root);
     }
 
@@ -434,7 +448,12 @@ public class FxWrapper {
                 connections.forEach((strings) -> {
                     ObservableList nodesx = FxWrapper.this.flow.getNodes();
                     if (!nodesx.isEmpty()) {
-                        Connection c = FxWrapper.this.flow.connect(((VNode) nodesx.get(FxWrapper.this.getNodeIndex(strings[0]))).getOutputs().get(FxWrapper.this.getNodeOutputPortIndex(FxWrapper.this.getNodeIndex(strings[0]), strings[0] + ":c:" + strings[1])), ((VNode) nodesx.get(FxWrapper.this.getNodeIndex(strings[2]))).getInputs().get(FxWrapper.this.getNodeInputPortIndex(FxWrapper.this.getNodeIndex(strings[2]), strings[2] + ":c:" + strings[3]))).getConnection();
+                        Connection c = flow.connect(getCon(getNodeIndex(strings[0]), strings[0] + ":c:" + strings[1])
+                                , getCon(getNodeIndex(strings[2]), strings[2] + ":c:" + strings[3])).getConnection();
+                        if(c==null){
+                            c = flow.connect(getCon(getNodeIndex(strings[2]), strings[2] + ":c:" + strings[3])
+                                    , getCon(getNodeIndex(strings[0]), strings[0] + ":c:" + strings[1])).getConnection();
+                        }
                         c.setId(strings[4]);
 
                         FxWrapper.this.flow.removeSkinFactories(getfXSkinFactory());
@@ -469,7 +488,7 @@ public class FxWrapper {
         nodeConT.start();
     }
 
-    public void addNodeAndCon2(final Map<String, String> nodes, final ArrayList<String[]> connections) {
+    /*public void addNodeAndCon2(final Map<String, String> nodes, final ArrayList<String[]> connections) {
         executor = Executors.newCachedThreadPool(runnable -> {
             Thread t = new Thread(runnable);
             t.setDaemon(true);
@@ -600,24 +619,61 @@ public class FxWrapper {
         }
 
     }
+    */
 
 
-    public void addConnection(String conID,String sourceID, String sourcePortID, String targetID, String targetPortID) {
+    public boolean addConnection(String conID,String sourceID, String sourcePortID, String targetID, String targetPortID) {
         System.out.println("ADD CONNECTION");
-        if(connectionExists(sourceID,sourcePortID,targetID,targetPortID)) return;
-        Platform.runLater(() -> {
-            ObservableList<VNode> nodes = flow.getNodes();
-            if (nodes.isEmpty()) return;
+        if(connectionExists(sourceID,sourcePortID,targetID,targetPortID)){
+            System.out.println("Connection already existed");
+            return false;
+        }
+        connectionAdder.submit(() -> {
+            System.out.println("ConnectionAdder betreten !");
 
-            Connection c = flow.connect(nodes.get(getNodeIndex(sourceID)).getOutputs().get(getNodeOutputPortIndex(getNodeIndex(sourceID), sourceID + ":c:" + sourcePortID))
-                    , nodes.get(getNodeIndex(targetID)).getInputs().get(getNodeInputPortIndex(getNodeIndex(targetID), targetID + ":c:" + targetPortID))).getConnection();
-            //flow.connect(nodes.get(getNodeIndex(sourceID)).getOutputs().get(getNodeOutputPortIndex(getNodeIndex(sourceID),sourceID+":c:"+sourcePortID))
-            // ,nodes.get(getNodeIndex(targetID)).getInputs().get(getNodeInputPortIndex(getNodeIndex(targetID),targetID+":c:"+targetPortID)));
-            c.setId(conID);
+                ObservableList<VNode> nodes = flow.getNodes();
+                if (nodes.isEmpty()) return;
+
+                Platform.runLater(() -> {
+                    lockMPSDelete();
+                    //deleteConnection(conID);
+                    Connection c = flow.connect(getCon(getNodeIndex(sourceID), sourceID + ":c:" + sourcePortID)
+                            , getCon(getNodeIndex(targetID), targetID + ":c:" + targetPortID)).getConnection();
+                    if(c==null){
+                        c = flow.connect(getCon(getNodeIndex(targetID), targetID + ":c:" + targetPortID)
+                                , getCon(getNodeIndex(sourceID), sourceID + ":c:" + sourcePortID)).getConnection();
+                    }
+                    c.setId(conID);
+                    FxWrapper.this.flow.removeSkinFactories(getfXSkinFactory());
+                    FxWrapper.this.flow.addSkinFactories(getfXSkinFactory());
+                    unlockMPSDelete();
+                });
+
+                //flow.connect(nodes.get(getNodeIndex(sourceID)).getOutputs().get(getNodeOutputPortIndex(getNodeIndex(sourceID),sourceID+":c:"+sourcePortID))
+                // ,nodes.get(getNodeIndex(targetID)).getInputs().get(getNodeInputPortIndex(getNodeIndex(targetID),targetID+":c:"+targetPortID)));
+                System.out.println(conID);
 
 
 
         });
+
+        /*Platform.runLater(() -> {
+            ObservableList<VNode> nodes = flow.getNodes();
+            if (nodes.isEmpty()) return;
+
+            lockMPSDelete();
+            Connection c = flow.connect(nodes.get(getNodeIndex(sourceID)).getOutputs().get(getNodeOutputPortIndex(getNodeIndex(sourceID), sourceID + ":c:" + sourcePortID))
+                    , nodes.get(getNodeIndex(targetID)).getInputs().get(getNodeInputPortIndex(getNodeIndex(targetID), targetID + ":c:" + targetPortID))).getConnection();
+            unlockMPSDelete();
+            //flow.connect(nodes.get(getNodeIndex(sourceID)).getOutputs().get(getNodeOutputPortIndex(getNodeIndex(sourceID),sourceID+":c:"+sourcePortID))
+            // ,nodes.get(getNodeIndex(targetID)).getInputs().get(getNodeInputPortIndex(getNodeIndex(targetID),targetID+":c:"+targetPortID)));
+            System.out.println(conID);
+            c.setId(conID);
+
+
+
+        });*/
+        return true;
 
     }
 
@@ -646,6 +702,23 @@ public class FxWrapper {
 
     }
 
+    public Connector getCon(int nodeindex, String portID){
+        ObservableList<VNode> nodes = flow.getNodes();
+        for (int i = 0; i < nodes.get(nodeindex).getOutputs().size(); i++) {
+            if (nodes.get(nodeindex).getOutputs().get(i).getId().equals(portID)) {
+                System.out.println("FOUND IT ");
+                return nodes.get(nodeindex).getOutputs().get(i);
+            }
+        }
+        for (int i = 0; i < nodes.get(nodeindex).getInputs().size(); i++) {
+            if (nodes.get(nodeindex).getInputs().get(i).getId().equals(portID)) {
+                System.out.println("FOUND IT ");
+                return nodes.get(nodeindex).getInputs().get(i);
+            }
+        }
+        return null;
+    }
+
     public void printCons(){
         flow.getAllConnections().forEach((s, connections) -> {
             connections.getConnections().forEach(connection -> {
@@ -668,6 +741,16 @@ public class FxWrapper {
         return exists[0];
     }
 
+    public boolean renameNode(String id,String name){
+        for (VNode vNode : flow.getNodes()) {
+            if (vNode.getId().equals(id)) {
+                vNode.setTitle(name);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean nodeExists2(String id){
         final boolean[] exists = {false};
         flow.getNodes().forEach(vNode -> {
@@ -680,18 +763,21 @@ public class FxWrapper {
 
     public boolean connectionExists(String sourceID, String sourcePortID, String targetID, String targetPortID){
         String senID = sourceID+":c:"+sourcePortID;
+        System.out.println("sendID "+senID);
         String recID = targetID+":c:"+targetPortID;
+        System.out.println("tarID " +recID);
 
         final boolean[] exists = {false};
         flow.getAllConnections().forEach((s, connections) -> {
             connections.getConnections().forEach(connection -> {
+                System.out.println("CONNECTION ÜBERPRÜFEN");
                 System.out.println("Reciever "+connection.getReceiver().getId() + " Sender: "+ connection.getSender().getId());
                 System.out.println("Reciever "+connection.getReceiver().getNode().getId() + " Sender: "+ connection.getSender().getId());
                 if(connection.getSender().getId().equals(senID)&&connection.getReceiver().getId().equals(recID)) {
                     exists[0] = true;
                     System.out.println("Connection exists !");
                 }
-                if(connection.getSender().getId().equals(senID)&&connection.getReceiver().getId().equals(recID)) {
+                if(connection.getSender().getId().equals(recID)&&connection.getReceiver().getId().equals(senID)) {
                     System.out.println("Connection exists ! switch" );
                 }
             });
