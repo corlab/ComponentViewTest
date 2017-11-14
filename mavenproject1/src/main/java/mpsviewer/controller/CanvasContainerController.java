@@ -186,6 +186,15 @@ public class CanvasContainerController {
 
     }
 
+    public void reset(){
+        content.setScaleX(1);
+        content.setScaleY(1);
+        content.setTranslateX(0);
+        content.setTranslateY(0);
+
+        transformMapViewport(0, 0);
+    }
+
     public StackPane getMainPane(){
         return mainPane;
     }
