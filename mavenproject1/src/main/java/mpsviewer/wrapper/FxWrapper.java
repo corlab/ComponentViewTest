@@ -259,10 +259,16 @@ public class FxWrapper {
     }
 
     public boolean reload(){
-        lockMPSDelete();
-        flow.clear();
-        unlockMPSDelete();
-        return true;
+        if(nodehandler.hasRootNode()){
+            lockMPSDelete();
+            flow.clear();
+            unlockMPSDelete();
+            return true;
+        } else {
+            return false;
+        }
+
+
     }
 
     public void lockMPSDelete() {

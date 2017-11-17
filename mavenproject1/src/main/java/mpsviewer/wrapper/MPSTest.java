@@ -92,6 +92,11 @@ public class MPSTest implements NodeHandler {
 
     }
 
+    @Override
+    public boolean hasRootNode() {
+        return false;
+    }
+
 
     @Override
     public ArrayList<NodeItem> getNodes() {

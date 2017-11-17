@@ -23,6 +23,7 @@ public interface NodeHandler {
     ArrayList<Pair> getBreakPoints(String id);
     void saveData();
     void reload();
+    boolean hasRootNode();
 
 
     ArrayList<NodeItem> getNodes();
