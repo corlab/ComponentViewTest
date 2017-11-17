@@ -48,8 +48,6 @@ import javax.swing.SwingUtilities;
 
 
 public class FxWrapper {
-    private ExecutorService executor;
-    private ExecutorService conExecutor;
     private ExecutorService connectionAdder = Executors.newSingleThreadExecutor();
     private NodeHandler nodehandler;
     private ObservableList<NodeItem> listViewItems;
@@ -129,8 +127,9 @@ public class FxWrapper {
         Button reload = new Button("reload");
         reload.setOnMouseClicked(mouseEvent -> {
             //
+            reload();
             nodehandler.reload();
-            resetSkinFactory();
+            //resetSkinFactory();
         });
 
         hBox.getChildren().add(safe);
@@ -224,7 +223,6 @@ public class FxWrapper {
 
     public boolean sytemUpdate() {
         lockMPSDelete();
-//todo
         Thread sysUpdate = new Thread(new Task<Void>() {
             @Override
             protected Void call() throws Exception {
@@ -258,6 +256,13 @@ public class FxWrapper {
         return true;
 
 
+    }
+
+    public boolean reload(){
+        lockMPSDelete();
+        flow.clear();
+        unlockMPSDelete();
+        return true;
     }
 
     public void lockMPSDelete() {
@@ -518,31 +523,6 @@ public class FxWrapper {
     public boolean changeConnection(String conID,String sourceID, String sourcePortID, String targetID, String targetPortID) {
         deleteConnection(conID);
         addConnection(conID,sourceID,sourcePortID,targetID,targetPortID);
-        /*connectionAdder.submit(() -> {
-
-            Connection c = getConnnection(conID);
-            c.setReceiver(getCon(getNodeIndex(sourceID), sourceID + ":c:" + sourcePortID));
-            c.setSender(getCon(getNodeIndex(targetID), targetID + ":c:" + targetPortID));
-            c.setId(conID);
-            System.out.println("IN CHANGE "+conID);
-            System.out.println("IN CHANGE "+c.getId());
-            Platform.runLater(() -> {
-                FxWrapper.this.flow.removeSkinFactories(getfXSkinFactory());
-                FxWrapper.this.flow.addSkinFactories(getfXSkinFactory());
-            });
-
-        });*/
-
-
-
-
-
-
-            //flow.connect(nodes.get(getNodeIndex(sourceID)).getOutputs().get(getNodeOutputPortIndex(getNodeIndex(sourceID),sourceID+":c:"+sourcePortID))
-            // ,nodes.get(getNodeIndex(targetID)).getInputs().get(getNodeInputPortIndex(getNodeIndex(targetID),targetID+":c:"+targetPortID)));
-
-
-
         return true;
 
     }
