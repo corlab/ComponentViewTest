@@ -1,5 +1,6 @@
 package mpsviewer.view;
 
+import eu.mihosoft.vrl.workflow.Connector;
 import eu.mihosoft.vrl.workflow.VFlow;
 import eu.mihosoft.vrl.workflow.VNode;
 import eu.mihosoft.vrl.workflow.fx.FXSkinFactory;
@@ -11,13 +12,19 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import mpsviewer.model.NodeItem;
 
+import java.util.List;
+
 /**
  * Created by jseidelmann on 24.03.17.
+ * The custom Skin for all nodes which hold a nodeItem.
  */
 public class MPSConceptSkin extends CustomFlowNodeSkinNew {
     private TextField name;
@@ -31,6 +38,7 @@ public class MPSConceptSkin extends CustomFlowNodeSkinNew {
     protected Node createView() {
         NodeItem nodeItem = (NodeItem)getModel().getValueObject().getValue();
         VBox vBox = new VBox();
+
 
         GridPane grid = new GridPane();
         grid.setPadding(new Insets(5, 5, 5, 5));
@@ -68,6 +76,10 @@ public class MPSConceptSkin extends CustomFlowNodeSkinNew {
 
         getModel().getConnectors().forEach(connector -> {
             Label label = new Label(connector.getLocalId());
+            System.out.println(connector.getType());
+
+            getConnectorShape(connector).setConnector(connector);
+
 
             Tooltip tooltip = new Tooltip();
             tooltip.setText(connector.getType());
@@ -84,8 +96,33 @@ public class MPSConceptSkin extends CustomFlowNodeSkinNew {
 
             else {
                 label.setLayoutX(getConnectorShape(connector).getRadius());
+
+                System.out.println("muh");
             }
             (getConnectorShape(connector)).addToRegion(label);
+
+            Circle c = new Circle(getConnectorShape(connector).getRadius()/3);
+
+            try {
+                Color distinctColor = Color.web(gethexColor(connector.getType().toLowerCase().hashCode()));
+                c.setFill(distinctColor);
+            }catch (Exception e){
+                System.out.println(e.getMessage());
+            }
+
+
+            getConnectorShape(connector).radiusProperty().addListener((observableValue, number, t1) -> {
+                c.setRadius(observableValue.getValue().doubleValue() / 2);
+                c.setLayoutX(getConnectorShape(connector).getRadius());
+                c.setLayoutY(getConnectorShape(connector).getRadius());
+
+
+            });
+
+
+
+
+            (getConnectorShape(connector)).addToRegion(c);
 
         });
 
@@ -101,10 +138,8 @@ public class MPSConceptSkin extends CustomFlowNodeSkinNew {
 
 
 
-        //getNode().setPrefHeight(100);
-        //getNode().setPrefWidth(100);
-        //getModel().setWidth(vBox.getWidth()+20);
         getModel().setHeight(200);
+
 
         return vBox;
     }
@@ -115,5 +150,23 @@ public class MPSConceptSkin extends CustomFlowNodeSkinNew {
 
     public TextField nameField(){
         return name;
+    }
+
+    private String gethexColor(int i){
+        return  Integer.toHexString(((i>>16)&0xFF))+
+                Integer.toHexString(((i>>8)&0xFF))+
+                Integer.toHexString((i&0xFF));
+
+    }
+
+    private String gethexColor2(int hash){
+        String color= "#";
+        for(int i = 0; i < 3; i++){
+            int value = (hash >> (i * 8)) & 0xFF;
+            color = new StringBuilder().append(("00" + Integer.toString(value,16).substring(-2))).toString();
+        }
+
+        return color;
+
     }
 }

@@ -2,6 +2,7 @@ mpsviewer/controller/CanvasContainerController$2$2.class
 mpsviewer/StandaloneRunner$1.class
 mpsviewer/wrapper/FxWrapper$3.class
 mpsviewer/wrapper/FxWrapper.class
+mpsviewer/view/CustomConnectionSkin$1.class
 mpsviewer/view/CustomFlowNodeSkinNew$1.class
 mpsviewer/StandaloneRunner.class
 mpsviewer/model/Port.class
@@ -21,3 +22,4 @@ mpsviewer/model/Property.class
 mpsviewer/model/Pair.class
 mpsviewer/wrapper/MPSTest.class
 mpsviewer/view/CustomConnectionSkin.class
+mpsviewer/view/CustomConnectionSkin$2.class

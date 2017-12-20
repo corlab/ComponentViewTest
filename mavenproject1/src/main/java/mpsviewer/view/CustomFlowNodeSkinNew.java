@@ -58,6 +58,7 @@ public abstract class CustomFlowNodeSkinNew extends FXFlowNodeSkinBase {
 
         super.updateView();
 
+
         // we don't create custom view for flows
         if (getModel() instanceof VFlowModel) {
             return;

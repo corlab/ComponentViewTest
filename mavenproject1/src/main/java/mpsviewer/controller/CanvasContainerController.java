@@ -129,8 +129,24 @@ public class CanvasContainerController {
                 double scaleFactor = (event.getDeltaY() > 0) ? SCALE_DELTA
                         : 1 / SCALE_DELTA;
 
+                double oldScale = content.getScaleX();
+
+                double dx = (event.getX()) - (content.getBoundsInParent().getWidth()/2 + content.getBoundsInParent().getMinX());
+                double dy = (event.getY()) - (content.getBoundsInParent().getHeight()/2 + content.getBoundsInParent().getMinY());
+
+                double f = scaleFactor-1;
+                System.out.println(scaleFactor);
+
                 content.setScaleX(content.getScaleX() * scaleFactor);
                 content.setScaleY(content.getScaleY() * scaleFactor);
+
+                    setPivot(f*dx,f*dy);
+
+
+
+
+
+
 
                 transformMapViewport();
 
@@ -186,17 +202,44 @@ public class CanvasContainerController {
 
     }
 
-    public void reset(){
-        content.setScaleX(1);
-        content.setScaleY(1);
+    public void reset2(){
+        content.setScaleX(0);
+        content.setScaleY(0);
         content.setTranslateX(0);
         content.setTranslateY(0);
 
-        transformMapViewport(0, 0);
+        transformMapViewport();
+    }
+    public void reset(double xScale,double yScale,double x, double y){
+        content.setScaleX(0);
+        content.setScaleY(0);
+        content.setTranslateX(0);
+        content.setTranslateY(0);
+        transformMapViewport(0,0);
+        if(xScale < yScale) {
+            content.setScaleX((xScale));
+            content.setScaleY((xScale));
+        } else {
+            content.setScaleX((yScale));
+            content.setScaleY((yScale));
+        }
+
+
+
+        //content.setTranslateX(x);
+        //content.setTranslateY(y);
+
+
+
     }
 
     public StackPane getMainPane(){
         return mainPane;
+    }
+
+    public void setPivot(double x, double y){
+        content.setTranslateX(content.getTranslateX()-x);
+        content.setTranslateY(content.getTranslateY()-y);
     }
 
 }

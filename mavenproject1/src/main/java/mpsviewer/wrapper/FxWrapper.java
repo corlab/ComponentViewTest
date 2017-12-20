@@ -10,10 +10,14 @@ package mpsviewer.wrapper;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.io.File;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
+
+import eu.mihosoft.scaledfx.ScaleBehavior;
 import eu.mihosoft.vrl.workflow.*;
 import eu.mihosoft.vrl.workflow.fx.FXValueSkinFactory;
 import eu.mihosoft.vrl.workflow.fx.ScalableContentPane;
@@ -39,6 +43,7 @@ import mpsviewer.controller.CanvasContainerController;
 import mpsviewer.model.NodeItem;
 import mpsviewer.model.Port;
 import mpsviewer.model.Property;
+import mpsviewer.view.CustomConnectionSkin;
 import mpsviewer.view.MPSCanvas;
 import mpsviewer.view.MPSConceptSkin;
 import mpsviewer.view.MyCell;
@@ -109,17 +114,42 @@ public class FxWrapper {
 
     private void initCanvas() {
         canvas = new MPSCanvas(this);
+        canvas.setAutoRescale(false);
         fXSkinFactory = new FXValueSkinFactory( canvas.getContent());
         fXSkinFactory.addSkinClassForValueType(NodeItem.class, MPSConceptSkin.class);
+        fXSkinFactory.addSkinClassForConnectionType("float", CustomConnectionSkin.class);
+
         bp = new BorderPane();
         bp.setLeft(listView);
         root = controller.init();
         controller.configure(canvas);
         HBox hBox = new HBox();
         Button resetView = new Button("reset view");
+
+
         resetView.setOnMouseClicked(mouseEvent -> {
-            controller.reset();
+            //TODO
+            ArrayList<Double> xCoord = new ArrayList<>();
+            ArrayList<Double> yCoord = new ArrayList<>();
+            getFlow().getNodes().forEach(vNode -> {
+                xCoord.add(vNode.getX() +vNode.getWidth());
+                xCoord.add(vNode.getX());
+                yCoord.add(vNode.getY() + vNode.getHeight());
+                yCoord.add(vNode.getY());
+            });
+
+
+            double minX = Collections.min(xCoord);
+            double maxX = Collections.max(xCoord);
+            double maxY = Collections.max(yCoord);
+            double minY = Collections.min(yCoord);
+            double deltaX = Math.abs(minX) + Math.abs(maxX);
+            double deltaY = Math.abs(minY) + Math.abs(maxY);
+            //controller.reset2();
+            controller.reset(canvas.getWidth()/deltaX,canvas.getHeight()/deltaY,minX,minY);
+
         });
+
         Button safe = new Button("Safe data");
         safe.setOnMouseClicked(mouseEvent -> {
             nodehandler.saveData();
@@ -179,22 +209,17 @@ public class FxWrapper {
         testItem.setName("test NAME");
         testItem.setId("test ID");
         testItem.addProperty(new Property("test", "double"));
-        testItem.addPort(new Port("testIn", "double", "in"));
-        testItem.addPort(new Port("testOut", "double", "out"));
-        testItem.addPort(new Port("testOut", "double", "out"));
-        testItem.addPort(new Port("testOut", "double", "out"));
-        testItem.addPort(new Port("testOut", "double", "out"));
-        testItem.addPort(new Port("testOut", "double", "out"));
-        testItem.addPort(new Port("testOut", "double", "in"));
-        testItem.addPort(new Port("testOut", "double", "in"));
-        testItem.addPort(new Port("testOut", "double", "in"));
-        testItem.addPort(new Port("testOut", "double", "in"));
-        testItem.addPort(new Port("testOut", "double", "in"));
-        testItem.addPort(new Port("testOut", "double", "in"));
-        testItem.addPort(new Port("testOut", "double", "in"));
+        testItem.addPort(new Port("testOut", "float", "out"));
+        testItem.addPort(new Port("testOut", "Type", "out"));
+        testItem.addPort(new Port("testOut", "Double", "in"));
+        testItem.addPort(new Port("testOut", "char", "in"));
+        testItem.addPort(new Port("testOut", "Type", "in"));
+        testItem.addPort(new Port("testOut", "char", "in"));
+        testItem.addPort(new Port("testOut", "fhar", "in"));
+
         listViewItems.add(testItem);
         n = flow.newNode();
-        canvas.setAutoRescale(true);
+
         n.getValueObject().setValue(testItem);
         Connector cn = n.addInput("double");
         cn.setLocalId("test");
@@ -216,6 +241,8 @@ public class FxWrapper {
         cn2.getValueObject().setValue(testItem);
         System.out.println(cn2.getId());
 
+
+        flow.removeSkinFactories(fXSkinFactory);
         flow.addSkinFactories(fXSkinFactory);
     }
 
@@ -508,8 +535,6 @@ public class FxWrapper {
                             System.out.println("Connection not found");
                         }
 
-
-
                         unlockMPSDelete();
                         FxWrapper.this.flow.removeSkinFactories(getfXSkinFactory());
                         FxWrapper.this.flow.addSkinFactories(getfXSkinFactory());
@@ -758,9 +783,7 @@ public class FxWrapper {
 
                 }
 
-
             }
-
 
         });
         return connections;
