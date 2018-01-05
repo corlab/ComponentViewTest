@@ -5,9 +5,13 @@ import eu.mihosoft.vrl.workflow.fx.ScalableContentPane;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.collections.ObservableList;
+import javafx.scene.Parent;
 import javafx.scene.input.*;
 import javafx.scene.input.MouseButton;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.NonInvertibleTransformException;
+import jfxtras.labs.util.event.MouseControlUtil;
 import mpsviewer.wrapper.FxWrapper;
 
 import java.util.Collection;
@@ -22,6 +26,13 @@ public class MPSCanvas extends ScalableContentPane {
         this.fxWrapper = fxWrapper;
         this.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
         //createDragDropEvents();
+
+        //createDragDropEvents();
+        Rectangle rect = new Rectangle();
+        rect.setStroke(new Color(1, 1, 1, 1));
+        rect.setFill(new Color(0, 0, 0, 0.5));
+
+        MouseControlUtil.addSelectionRectangleGesture((Parent) getContent(), rect);
     }
 
     public void createDragDropEvents() {

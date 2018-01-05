@@ -4,10 +4,7 @@ import eu.mihosoft.vrl.workflow.VFlow;
 import eu.mihosoft.vrl.workflow.VFlowModel;
 import eu.mihosoft.vrl.workflow.VNode;
 import eu.mihosoft.vrl.workflow.VisualizationRequest;
-import eu.mihosoft.vrl.workflow.fx.FXFlowNodeSkin;
-import eu.mihosoft.vrl.workflow.fx.FXFlowNodeSkinBase;
-import eu.mihosoft.vrl.workflow.fx.FXSkinFactory;
-import eu.mihosoft.vrl.workflow.fx.ScalableContentPane;
+import eu.mihosoft.vrl.workflow.fx.*;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -42,6 +39,8 @@ public abstract class CustomFlowNodeSkinNew extends FXFlowNodeSkinBase {
     public void updateView() {
 
         getNode().getLeftIcons().clear();
+
+
 
 
         WindowIcon closeIcon = new CloseIcon(getNode());
@@ -89,6 +88,14 @@ public abstract class CustomFlowNodeSkinNew extends FXFlowNodeSkinBase {
             AnchorPane.setRightAnchor(view, 0.0);
 
             getNode().setContentPane(nodePane);
+        }
+
+        if (getNode() instanceof FlowNodeWindow) {
+            FlowNodeWindow window = (FlowNodeWindow) getNode();
+            window.getEditableLabels().get(0).baseTextProperty().addListener((observable, oldValue, newValue) -> {
+                getModel().setId(newValue);
+                getModel().setTitle(newValue);
+            });
         }
     }
 

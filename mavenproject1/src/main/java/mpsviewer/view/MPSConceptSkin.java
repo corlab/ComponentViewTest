@@ -40,7 +40,7 @@ public class MPSConceptSkin extends CustomFlowNodeSkinNew {
         VBox vBox = new VBox();
 
 
-        GridPane grid = new GridPane();
+        /*GridPane grid = new GridPane();
         grid.setPadding(new Insets(5, 5, 5, 5));
         grid.setVgap(2);
         grid.setHgap(2);
@@ -66,7 +66,7 @@ public class MPSConceptSkin extends CustomFlowNodeSkinNew {
         grid.getChildren().add(okButton);
 
         vBox.getChildren().add(grid);
-//        vBox.getChildren().add(nameButton);
+//        vBox.getChildren().add(nameButton);*/
 
 
         Label properties = new Label("Properties :");

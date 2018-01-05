@@ -19,6 +19,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="Maven: eu.mihosoft.vrl.wrkflow:vworkflows-master:1.0.0" level="project" />
+    <orderEntry type="library" name="VWorkflows_jar" level="project" />
   </component>
 </module>

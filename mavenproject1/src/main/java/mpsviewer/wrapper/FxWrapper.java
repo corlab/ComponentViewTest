@@ -10,14 +10,12 @@ package mpsviewer.wrapper;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.io.File;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 
-import eu.mihosoft.scaledfx.ScaleBehavior;
 import eu.mihosoft.vrl.workflow.*;
 import eu.mihosoft.vrl.workflow.fx.FXValueSkinFactory;
 import eu.mihosoft.vrl.workflow.fx.ScalableContentPane;
@@ -43,7 +41,6 @@ import mpsviewer.controller.CanvasContainerController;
 import mpsviewer.model.NodeItem;
 import mpsviewer.model.Port;
 import mpsviewer.model.Property;
-import mpsviewer.view.CustomConnectionSkin;
 import mpsviewer.view.MPSCanvas;
 import mpsviewer.view.MPSConceptSkin;
 import mpsviewer.view.MyCell;
@@ -117,7 +114,6 @@ public class FxWrapper {
         canvas.setAutoRescale(false);
         fXSkinFactory = new FXValueSkinFactory( canvas.getContent());
         fXSkinFactory.addSkinClassForValueType(NodeItem.class, MPSConceptSkin.class);
-        fXSkinFactory.addSkinClassForConnectionType("float", CustomConnectionSkin.class);
 
         bp = new BorderPane();
         bp.setLeft(listView);
@@ -127,26 +123,93 @@ public class FxWrapper {
         Button resetView = new Button("reset view");
 
 
+        final double[] minXOld = {0};
+        final double[] minYOld = {0};
         resetView.setOnMouseClicked(mouseEvent -> {
-            //TODO
+
+            //canvas.resetScale();
+            //canvas.requestScale();
+            double leftAndRight = canvas.getInsets().getLeft() + canvas.getInsets().getRight();
+            double topAndBottom = canvas.getInsets().getTop() + canvas.getInsets().getBottom();
+
             ArrayList<Double> xCoord = new ArrayList<>();
             ArrayList<Double> yCoord = new ArrayList<>();
             getFlow().getNodes().forEach(vNode -> {
                 xCoord.add(vNode.getX() +vNode.getWidth());
+                System.out.println(vNode.getWidth());
                 xCoord.add(vNode.getX());
                 yCoord.add(vNode.getY() + vNode.getHeight());
                 yCoord.add(vNode.getY());
             });
 
-
             double minX = Collections.min(xCoord);
             double maxX = Collections.max(xCoord);
             double maxY = Collections.max(yCoord);
             double minY = Collections.min(yCoord);
-            double deltaX = Math.abs(minX) + Math.abs(maxX);
-            double deltaY = Math.abs(minY) + Math.abs(maxY);
+
+            double contentWidth = maxX-minX;
+            double contentHeight= maxY-minY;
+
+            System.out.println("NEEDED WIDTH "+contentWidth);
+            System.out.println("CANVAS WIDTH "+canvas.getWidth());
+            System.out.println("NEEDED HEIGHT "+contentHeight);
+            System.out.println("CANVAS HEIGHT "+canvas.getHeight());
+
+            double contentScaleWidth = contentWidth / canvas.getWidth();
+            double contentScaleHeight = contentHeight / canvas.getHeight();
+            System.out.println("SCALE HEIGHT "+contentScaleHeight);
+            System.out.println("SCALE WIDTH "+contentScaleWidth);
+            contentScaleWidth = Math.max(contentScaleWidth, canvas.getMinScaleX());
+            contentScaleWidth = Math.min(contentScaleWidth, canvas.getMaxScaleX());
+            contentScaleHeight = Math.max(contentScaleHeight, canvas.getMinScaleY());
+            contentScaleHeight = Math.min(contentScaleHeight, canvas.getMaxScaleY());
+
+
+
+            System.out.println(contentScaleHeight);
+
+
+
+
+
+
+
+
+
+            controller.reset2();
+            controller.reset(0,minX,minY);
+            canvas.resetScale();
+            canvas.requestScale();
+            //
+            //controller.reset(1/Math.max(contentScaleHeight,contentScaleWidth)-0.2,minX,minY,minX,minY);
+            /*if(Math.max(contentScaleHeight,contentScaleWidth) > 1)controller.reset(1/Math.max(contentScaleHeight,contentScaleWidth),0,0,0);
+            else {
+                controller.reset(1/Math.min(contentScaleHeight,contentScaleWidth),0,0,0);
+            }
+
+
+            if((contentScaleHeight > 1) && (contentScaleWidth > 1)){
+                controller.reset(1/Math.max(contentScaleHeight,contentScaleWidth),0,0,0);
+            } else {
+                if(Math.max(contentScaleHeight,contentScaleWidth) > 1)controller.reset(1/Math.max(contentScaleHeight,contentScaleWidth),0,0,0);
+                else {
+                    controller.reset(Math.max(contentScaleHeight,contentScaleWidth),0,0,0);
+                }
+            }*/
+
+
             //controller.reset2();
-            controller.reset(canvas.getWidth()/deltaX,canvas.getHeight()/deltaY,minX,minY);
+
+            //controller.reset(minYOld[0], minYOld[0],-minXOld[0],-minYOld[0]);
+            //controller.reset(minXOld[0], minYOld[0],minX,minY);
+
+
+            minXOld[0] = minX;
+            minYOld[0] = minY;
+
+
+
+
 
         });
 
@@ -240,6 +303,8 @@ public class FxWrapper {
         cn2.setLocalId("test2");
         cn2.getValueObject().setValue(testItem);
         System.out.println(cn2.getId());
+
+
 
 
         flow.removeSkinFactories(fXSkinFactory);
@@ -772,6 +837,8 @@ public class FxWrapper {
             String id = s.substring(s.indexOf("=") + 1, s.indexOf(";"));
 
             ArrayList<Pair> points = connectionSkin.getPoints();
+
+
             if(!id.equals("0")) {
                 if(!points.isEmpty()) {
                     points.forEach(pair -> {

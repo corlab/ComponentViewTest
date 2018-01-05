@@ -129,13 +129,10 @@ public class CanvasContainerController {
                 double scaleFactor = (event.getDeltaY() > 0) ? SCALE_DELTA
                         : 1 / SCALE_DELTA;
 
-                double oldScale = content.getScaleX();
-
                 double dx = (event.getX()) - (content.getBoundsInParent().getWidth()/2 + content.getBoundsInParent().getMinX());
                 double dy = (event.getY()) - (content.getBoundsInParent().getHeight()/2 + content.getBoundsInParent().getMinY());
 
                 double f = scaleFactor-1;
-                System.out.println(scaleFactor);
 
                 content.setScaleX(content.getScaleX() * scaleFactor);
                 content.setScaleY(content.getScaleY() * scaleFactor);
@@ -203,31 +200,47 @@ public class CanvasContainerController {
     }
 
     public void reset2(){
-        content.setScaleX(0);
-        content.setScaleY(0);
+        content.setScaleX(1);
+        content.setScaleY(1);
         content.setTranslateX(0);
         content.setTranslateY(0);
 
-        transformMapViewport();
+        transformMapViewport(0, 0);
     }
-    public void reset(double xScale,double yScale,double x, double y){
+    public void reset(double scale,double x, double y){
+        /*System.out.println(content.getHeight());
+        System.out.println(content.getWidth());
         content.setScaleX(0);
         content.setScaleY(0);
-        content.setTranslateX(0);
-        content.setTranslateY(0);
-        transformMapViewport(0,0);
-        if(xScale < yScale) {
-            content.setScaleX((xScale));
-            content.setScaleY((xScale));
-        } else {
-            content.setScaleX((yScale));
-            content.setScaleY((yScale));
-        }
 
 
 
-        //content.setTranslateX(x);
-        //content.setTranslateY(y);
+
+
+
+
+
+
+        System.out.println(content.getTranslateX());
+        System.out.println(content.getTranslateY());*/
+        System.out.println(x);
+        System.out.println(y);
+        //content.setScaleX(0);
+        //content.setScaleY(0);
+        double deltaX = content.getTranslateX() - x;
+        double deltaY = content.getTranslateY() - y;
+
+        content.setTranslateX(-deltaX);
+        content.setTranslateY(-deltaY);
+        //content.setScaleX(scale);
+        //content.setScaleY(scale);
+
+
+
+
+
+
+
 
 
 
