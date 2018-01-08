@@ -230,10 +230,6 @@ public class CanvasContainerController {
         double deltaX = content.getTranslateX() - x;
         double deltaY = content.getTranslateY() - y;
 
-        content.setTranslateX(-deltaX);
-        content.setTranslateY(-deltaY);
-        //content.setScaleX(scale);
-        //content.setScaleY(scale);
 
 
 
@@ -252,7 +248,9 @@ public class CanvasContainerController {
 
     public void setPivot(double x, double y){
         content.setTranslateX(content.getTranslateX()-x);
+
         content.setTranslateY(content.getTranslateY()-y);
+        transformMapViewport(x,y);
     }
 
 }

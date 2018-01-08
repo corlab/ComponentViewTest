@@ -93,7 +93,7 @@ public abstract class CustomFlowNodeSkinNew extends FXFlowNodeSkinBase {
         if (getNode() instanceof FlowNodeWindow) {
             FlowNodeWindow window = (FlowNodeWindow) getNode();
             window.getEditableLabels().get(0).baseTextProperty().addListener((observable, oldValue, newValue) -> {
-                getModel().setId(newValue);
+                //getModel().setId(newValue);
                 getModel().setTitle(newValue);
             });
         }

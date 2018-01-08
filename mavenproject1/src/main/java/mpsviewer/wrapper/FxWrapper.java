@@ -180,6 +180,7 @@ public class FxWrapper {
             controller.reset(0,minX,minY);
             canvas.resetScale();
             canvas.requestScale();
+
             //
             //controller.reset(1/Math.max(contentScaleHeight,contentScaleWidth)-0.2,minX,minY,minX,minY);
             /*if(Math.max(contentScaleHeight,contentScaleWidth) > 1)controller.reset(1/Math.max(contentScaleHeight,contentScaleWidth),0,0,0);
@@ -835,6 +836,7 @@ public class FxWrapper {
         flow.getConnectionSkinMapUnsynch(fXSkinFactory).forEach((s, connectionSkin) -> {
             ArrayList<mpsviewer.model.Pair> coords = new ArrayList<>();
             String id = s.substring(s.indexOf("=") + 1, s.indexOf(";"));
+
 
             ArrayList<Pair> points = connectionSkin.getPoints();
 
