@@ -36,6 +36,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.shape.Circle;
 import javafx.util.Pair;
 import mpsviewer.controller.CanvasContainerController;
 import mpsviewer.model.NodeItem;
@@ -123,9 +124,12 @@ public class FxWrapper {
         Button resetView = new Button("reset view");
 
 
-        final double[] minXOld = {0};
-        final double[] minYOld = {0};
+
         resetView.setOnMouseClicked(mouseEvent -> {
+            controller.reset2();
+            canvas.resetScale();
+            canvas.requestScale();
+
 
             //canvas.resetScale();
             //canvas.requestScale();
@@ -176,37 +180,27 @@ public class FxWrapper {
 
 
 
-            controller.reset2();
-            controller.reset(0,minX,minY);
-            canvas.resetScale();
-            canvas.requestScale();
+
+            //controller.reset(contentScaleWidth,minX,minY);
+
 
             //
             //controller.reset(1/Math.max(contentScaleHeight,contentScaleWidth)-0.2,minX,minY,minX,minY);
             /*if(Math.max(contentScaleHeight,contentScaleWidth) > 1)controller.reset(1/Math.max(contentScaleHeight,contentScaleWidth),0,0,0);
             else {
                 controller.reset(1/Math.min(contentScaleHeight,contentScaleWidth),0,0,0);
-            }
-
-
-            if((contentScaleHeight > 1) && (contentScaleWidth > 1)){
-                controller.reset(1/Math.max(contentScaleHeight,contentScaleWidth),0,0,0);
-            } else {
-                if(Math.max(contentScaleHeight,contentScaleWidth) > 1)controller.reset(1/Math.max(contentScaleHeight,contentScaleWidth),0,0,0);
-                else {
-                    controller.reset(Math.max(contentScaleHeight,contentScaleWidth),0,0,0);
-                }
             }*/
 
 
-            //controller.reset2();
+            /*if((contentScaleHeight > 1) && (contentScaleWidth > 1)){
+                controller.reset(1/Math.max(contentScaleHeight,contentScaleWidth),0,0);
+            } else {
+                if(Math.max(contentScaleHeight,contentScaleWidth) > 1)controller.reset(1/Math.max(contentScaleHeight,contentScaleWidth),0,0);
+                else {
+                    controller.reset(Math.max(contentScaleHeight,contentScaleWidth),0,0);
+                }
+            }*/
 
-            //controller.reset(minYOld[0], minYOld[0],-minXOld[0],-minYOld[0]);
-            //controller.reset(minXOld[0], minYOld[0],minX,minY);
-
-
-            minXOld[0] = minX;
-            minYOld[0] = minY;
 
 
 
@@ -560,6 +554,8 @@ public class FxWrapper {
                             });
                         }
                         connectionSkin.addPoints(coordList);
+                        ArrayList<Circle> c = connectionSkin.getBreakpoints();
+
                     }
                 });
 

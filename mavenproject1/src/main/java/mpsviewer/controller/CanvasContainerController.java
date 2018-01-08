@@ -227,8 +227,8 @@ public class CanvasContainerController {
         System.out.println(y);
         //content.setScaleX(0);
         //content.setScaleY(0);
-        double deltaX = content.getTranslateX() - x;
-        double deltaY = content.getTranslateY() - y;
+        content.setTranslateX(-x);
+        content.setTranslateY(-y);
 
 
 
