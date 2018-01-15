@@ -112,3 +112,34 @@
 .scroll-pane {
    -fx-background-color: transparent;
 }
+
+#normalBreakpoint {
+    -fx-stroke: yellow;
+    -fx-fill: black;
+    -fx-stroke-width: 3;
+    -fx-opacity: 0.8;
+
+}
+
+#deactivatedBreakpoint {
+    -fx-stroke: yellow;
+    -fx-fill: black;
+    -fx-stroke-width: 3;
+    -fx-opacity: 0.2;
+
+}
+
+#selectedBreakpoint {
+    -fx-stroke: beige;
+    -fx-fill: black;
+    -fx-stroke-width: 3;
+    -fx-opacity: 0.8;
+
+}
+
+#editable-label {
+    -fx-background-color: rgba(0,191,255,0.2);
+    -fx-background-opacity: 0.1;
+    -fx-text-fill: white;
+
+}

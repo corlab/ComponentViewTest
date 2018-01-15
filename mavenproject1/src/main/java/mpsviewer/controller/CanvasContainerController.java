@@ -22,6 +22,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import jfxtras.labs.util.event.MouseControlUtil;
 
 public class CanvasContainerController {
 
@@ -45,6 +46,8 @@ public class CanvasContainerController {
         scroller = new ScrollPane();
         viewPane.setCenter(scroller);
         mainPane.getChildren().add(viewPane);
+
+
 
         return mainPane;
     }
@@ -82,20 +85,20 @@ public class CanvasContainerController {
 
     private void transformMapViewport(double dx, double dy) {
 
-        if (content.getScaleX() <= 1 && content.getScaleY() <= 1) {
+        /*if (content.getScaleX() <= 1 && content.getScaleY() <= 1) {
             minimap.setVisible(false);
         } else {
             minimapViewport.setTranslateX(dx);
             minimapViewport.setTranslateY(dy);
             minimap.setVisible(true);
-        }
+        }*/
     }
 
     public void configure(Region r) {
         content = r;
         zoomPane = new StackPane();
 
-        setupMinimap();
+        //setupMinimap();
 
         zoomPane.getChildren().add(content);
         zoomPane.setStyle("-fx-background-color: linear-gradient(to bottom, rgb(10,32,60), rgb(42,52,120));");
@@ -106,6 +109,7 @@ public class CanvasContainerController {
 
         setListeners();
         transformMapViewport();
+
     }
 
     private void setListeners() {
@@ -175,6 +179,7 @@ public class CanvasContainerController {
                         transformMapViewport((prevX + deltaX)*-0.2, (prevY + deltaY)*-0.2);
 
                         lastMouseCoordinates.set(new Point2D(event.getX(), event.getY()));
+
                     }
                 });
             }
@@ -207,39 +212,9 @@ public class CanvasContainerController {
 
         transformMapViewport(0, 0);
     }
-    public void reset(double scale,double x, double y){
-        /*System.out.println(content.getHeight());
-        System.out.println(content.getWidth());
-        content.setScaleX(0);
-        content.setScaleY(0);
-
-
-
-
-
-
-
-
-
-        System.out.println(content.getTranslateX());
-        System.out.println(content.getTranslateY());*/
-        System.out.println(x);
-        System.out.println(y);
-        //content.setScaleX(0);
-        //content.setScaleY(0);
+    public void reset(double x, double y){
         content.setTranslateX(-x);
         content.setTranslateY(-y);
-
-
-
-
-
-
-
-
-
-
-
     }
 
     public StackPane getMainPane(){

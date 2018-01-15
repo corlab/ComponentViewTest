@@ -9,7 +9,10 @@ package mpsviewer.wrapper;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,6 +22,7 @@ import java.util.concurrent.*;
 import eu.mihosoft.vrl.workflow.*;
 import eu.mihosoft.vrl.workflow.fx.FXValueSkinFactory;
 import eu.mihosoft.vrl.workflow.fx.ScalableContentPane;
+import eu.mihosoft.vrl.workflow.fx.ShapeConverter;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.collections.FXCollections;
@@ -36,8 +40,11 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.shape.Circle;
+import javafx.scene.shape.*;
+import javafx.scene.transform.NonInvertibleTransformException;
+import javafx.stage.FileChooser;
 import javafx.util.Pair;
+import jfxtras.scene.control.window.Window;
 import mpsviewer.controller.CanvasContainerController;
 import mpsviewer.model.NodeItem;
 import mpsviewer.model.Port;
@@ -45,6 +52,7 @@ import mpsviewer.model.Property;
 import mpsviewer.view.MPSCanvas;
 import mpsviewer.view.MPSConceptSkin;
 import mpsviewer.view.MyCell;
+import mpsviewer.view.SvgConverter;
 
 
 import javax.swing.SwingUtilities;
@@ -65,6 +73,7 @@ public class FxWrapper {
     private VNode n;
     private VNode n2;
     private boolean deleteNode = true;
+    private Scene scene;
 
 
     public FxWrapper(Container container, NodeHandler nodeHandler) {
@@ -91,7 +100,7 @@ public class FxWrapper {
         initFlow();
 
 
-        Scene scene = new Scene(bp);
+        scene = new Scene(bp);
         //File f = new File("test.css");
         File f = new File("test.css");
         String fileURI = f.toURI().toString();
@@ -126,91 +135,31 @@ public class FxWrapper {
 
 
         resetView.setOnMouseClicked(mouseEvent -> {
-            controller.reset2();
-            canvas.resetScale();
-            canvas.requestScale();
-
-
-            //canvas.resetScale();
-            //canvas.requestScale();
-            double leftAndRight = canvas.getInsets().getLeft() + canvas.getInsets().getRight();
-            double topAndBottom = canvas.getInsets().getTop() + canvas.getInsets().getBottom();
-
             ArrayList<Double> xCoord = new ArrayList<>();
             ArrayList<Double> yCoord = new ArrayList<>();
             getFlow().getNodes().forEach(vNode -> {
                 xCoord.add(vNode.getX() +vNode.getWidth());
-                System.out.println(vNode.getWidth());
                 xCoord.add(vNode.getX());
                 yCoord.add(vNode.getY() + vNode.getHeight());
                 yCoord.add(vNode.getY());
             });
 
             double minX = Collections.min(xCoord);
-            double maxX = Collections.max(xCoord);
-            double maxY = Collections.max(yCoord);
             double minY = Collections.min(yCoord);
 
-            double contentWidth = maxX-minX;
-            double contentHeight= maxY-minY;
-
-            System.out.println("NEEDED WIDTH "+contentWidth);
-            System.out.println("CANVAS WIDTH "+canvas.getWidth());
-            System.out.println("NEEDED HEIGHT "+contentHeight);
-            System.out.println("CANVAS HEIGHT "+canvas.getHeight());
-
-            double contentScaleWidth = contentWidth / canvas.getWidth();
-            double contentScaleHeight = contentHeight / canvas.getHeight();
-            System.out.println("SCALE HEIGHT "+contentScaleHeight);
-            System.out.println("SCALE WIDTH "+contentScaleWidth);
-            contentScaleWidth = Math.max(contentScaleWidth, canvas.getMinScaleX());
-            contentScaleWidth = Math.min(contentScaleWidth, canvas.getMaxScaleX());
-            contentScaleHeight = Math.max(contentScaleHeight, canvas.getMinScaleY());
-            contentScaleHeight = Math.min(contentScaleHeight, canvas.getMaxScaleY());
-
-
-
-            System.out.println(contentScaleHeight);
-
-
-
-
-
-
-
-
-
-
-            //controller.reset(contentScaleWidth,minX,minY);
-
-
-            //
-            //controller.reset(1/Math.max(contentScaleHeight,contentScaleWidth)-0.2,minX,minY,minX,minY);
-            /*if(Math.max(contentScaleHeight,contentScaleWidth) > 1)controller.reset(1/Math.max(contentScaleHeight,contentScaleWidth),0,0,0);
-            else {
-                controller.reset(1/Math.min(contentScaleHeight,contentScaleWidth),0,0,0);
-            }*/
-
-
-            /*if((contentScaleHeight > 1) && (contentScaleWidth > 1)){
-                controller.reset(1/Math.max(contentScaleHeight,contentScaleWidth),0,0);
-            } else {
-                if(Math.max(contentScaleHeight,contentScaleWidth) > 1)controller.reset(1/Math.max(contentScaleHeight,contentScaleWidth),0,0);
-                else {
-                    controller.reset(Math.max(contentScaleHeight,contentScaleWidth),0,0);
-                }
-            }*/
-
-
-
-
-
+            controller.reset2();
+            canvas.resetScale();
+            canvas.requestScale();
+            controller.reset(canvas.getContentScaleTransform().deltaTransform(minX,minY).getX(),canvas.getContentScaleTransform().deltaTransform(minX,minY).getY());
 
         });
 
-        Button safe = new Button("Safe data");
-        safe.setOnMouseClicked(mouseEvent -> {
+        Button save = new Button("Save data");
+        save.setOnMouseClicked(mouseEvent -> {
+            //visBreakPoints();
             nodehandler.saveData();
+            SvgConverter svgConvert = new SvgConverter();
+            System.out.println(svgConvert.convert(canvas));
         });
         Button reload = new Button("reload");
         reload.setOnMouseClicked(mouseEvent -> {
@@ -220,9 +169,37 @@ public class FxWrapper {
             //resetSkinFactory();
         });
 
+        Button svgFile = new Button("Convert to svg");
+        svgFile.setOnMouseClicked(mouseEvent -> {
+            FileChooser fileChooser = new FileChooser();
+            SvgConverter svgConverter = new SvgConverter();
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("IMAGE files (*.svg)", "*.svg"));
+
+            File f = fileChooser.showSaveDialog(scene.getWindow());
+
+            BufferedWriter writer = null;
+            if(f!=null) {
+
+
+                try {
+                    writer = new BufferedWriter(new FileWriter(f));
+                    writer.write(svgConverter.convert(canvas));
+                    writer.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+
+
+
+
+        });
+
         hBox.getChildren().add(safe);
         hBox.getChildren().add(resetView);
         hBox.getChildren().add(reload);
+        hBox.getChildren().add(svgFile);
         bp.setTop(hBox);
         bp.setCenter(root);
     }
@@ -289,15 +266,12 @@ public class FxWrapper {
         cn.setLocalId("test1");
         cn.getValueObject().setValue(testItem);
         n.setId("test");
-        System.out.println("TYPE " + cn.getType());
-        System.out.println("ID " + cn.getId());
         n2 = flow.newNode();
         n2.setId("test2");
         Connector cn2 = n2.addOutput("double");
         n2.getValueObject().setValue(testItem);
         cn2.setLocalId("test2");
         cn2.getValueObject().setValue(testItem);
-        System.out.println(cn2.getId());
 
 
 
@@ -852,6 +826,36 @@ public class FxWrapper {
 
         });
         return connections;
+    }
+
+    public void visBreakPoints(){
+        Map<String, ArrayList<mpsviewer.model.Pair>> connections = new HashMap<>();
+        flow.getConnectionSkinMapUnsynch(fXSkinFactory).forEach((s, connectionSkin) -> {
+            ArrayList<mpsviewer.model.Pair> coords = new ArrayList<>();
+            String id = s.substring(s.indexOf("=") + 1, s.indexOf(";"));
+
+
+            ArrayList<Pair> points = connectionSkin.getPoints();
+            ArrayList<Circle> circles = connectionSkin.getBreakpoints();
+            circles.forEach(circle -> {
+                circle.setOpacity(1);
+            });
+
+
+            /*if(!id.equals("0")) {
+                if(!points.isEmpty()) {
+                    points.forEach(pair -> {
+                        coords.add(new mpsviewer.model.Pair(pair.getKey().toString(),pair.getValue().toString()));
+                        connections.put(id,coords);
+                    });
+                } else {
+                    connections.put(id,null);
+
+                }
+
+            }*/
+
+        });
     }
 
     public void resetSkinFactory(){

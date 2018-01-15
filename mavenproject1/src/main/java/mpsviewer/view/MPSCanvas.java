@@ -33,6 +33,7 @@ public class MPSCanvas extends ScalableContentPane {
         rect.setFill(new Color(0, 0, 0, 0.5));
 
         MouseControlUtil.addSelectionRectangleGesture((Parent) getContent(), rect);
+
     }
 
     public void createDragDropEvents() {
@@ -143,7 +144,7 @@ public class MPSCanvas extends ScalableContentPane {
             fxWrapper.getFlow().getNodes().forEach(vNode -> vNode.requestSelection(false));
             if (mouseEvent.getButton() == MouseButton.MIDDLE) {
                 //fxWrapper.printCons();
-                System.out.println("muhmuh");
+
 
             }
 
@@ -152,7 +153,7 @@ public class MPSCanvas extends ScalableContentPane {
         this.setOnKeyTyped(keyEvent -> {
             if(keyEvent.isControlDown() && keyEvent.getCode() == KeyCode.R) {
                 fxWrapper.getNodehandler().reload();
-                System.out.println("lalal");
+
             }
             if(keyEvent.isControlDown() && keyEvent.getCode() == KeyCode.S) {
                 fxWrapper.getNodehandler().reload();
