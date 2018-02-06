@@ -13,6 +13,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.shape.Circle;
 import jfxtras.scene.control.window.CloseIcon;
 import jfxtras.scene.control.window.MinimizeIcon;
+import jfxtras.scene.control.window.Window;
 import jfxtras.scene.control.window.WindowIcon;
 
 import java.util.List;
@@ -90,8 +91,10 @@ public abstract class CustomFlowNodeSkinNew extends FXFlowNodeSkinBase {
             getNode().setContentPane(nodePane);
         }
 
+
         if (getNode() instanceof FlowNodeWindow) {
-            FlowNodeWindow window = (FlowNodeWindow) getNode();
+            Window window = (Window) getNode();
+
             window.getEditableLabels().get(0).baseTextProperty().addListener((observable, oldValue, newValue) -> {
                 getModel().setTitle(newValue);
             });

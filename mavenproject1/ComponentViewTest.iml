@@ -20,6 +20,7 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="VWorkflows_jar" level="project" />
+    <orderEntry type="library" name="JavaFxNodeToSvg_jar" level="project" />
     <orderEntry type="library" name="Maven: eu.mihosoft.vrl.wrkflow:vworkflows-master:1.0.0" level="project" />
   </component>
 </module>

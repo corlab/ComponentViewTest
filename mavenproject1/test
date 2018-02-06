@@ -1,0 +1,28 @@
+<svg width="248.0" heigth="445.0" viewBox="-76.36474609375 0.0 324.36474609375 445.0">
+<path d="M 246.99858639028764 259.6178405707882 L 0.0 62.5  " stroke="red" stroke-width="3" fill="none" /><path d="M 200.0 100.0 L 46.99858639028764 259.6178405707882  " stroke="red" stroke-width="3" fill="none" /><text x="-43.236328125" y="52.5">test1</text>
+<circle cx="0.0" cy="62.5" r="5.0" fill="#e6294b"/>
+<text x="-63.02197265625" y="77.5">testlong</text>
+<circle cx="0.0" cy="87.5" r="5.0" fill="#46f0f0"/>
+<text x="-76.36474609375" y="102.5">testlonger</text>
+<circle cx="0.0" cy="112.5" r="5.0" fill="#ffe119"/>
+<text x="-18.27099609375" y="127.5">3</text>
+<circle cx="0.0" cy="137.5" r="5.0" fill="#911eb4"/>
+<text x="34.0" y="6.0">Node</text>
+<text x="54.0" y="39.0"><test NAME></text>
+<text x="2.0" y="57.0">Properties :</text>
+<text x="2.0" y="72.0">test double</text>
+<text x="34.0" y="6.0">Node</text>
+<text x="54.0" y="39.0"><test NAME></text>
+<text x="2.0" y="57.0">Properties :</text>
+<text x="2.0" y="72.0">test double</text>
+<text x="80.99858639028764" y="165.61784057078822">Node</text>
+<text x="100.99858639028764" y="198.61784057078822"><test NAME></text>
+<text x="48.99858639028764" y="216.61784057078822">Properties :</text>
+<text x="48.99858639028764" y="231.61784057078822">test double</text>
+<text x="251.99858639028764" y="244.6178405707882">0</text>
+<circle cx="246.99858639028764" cy="259.6178405707882" r="7.5" fill="#e6294b"/>
+<text x="23.72759029653764" y="244.6178405707882">1</text>
+<circle cx="46.99858639028764" cy="259.6178405707882" r="7.5" fill="#e6294b"/>
+<text x="205.0" y="85.0">test2</text>
+<circle cx="200.0" cy="100.0" r="7.5" fill="#e6294b"/>
+</svg>

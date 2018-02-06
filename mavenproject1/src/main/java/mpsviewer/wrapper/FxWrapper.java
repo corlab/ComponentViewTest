@@ -22,7 +22,6 @@ import java.util.concurrent.*;
 import eu.mihosoft.vrl.workflow.*;
 import eu.mihosoft.vrl.workflow.fx.FXValueSkinFactory;
 import eu.mihosoft.vrl.workflow.fx.ScalableContentPane;
-import eu.mihosoft.vrl.workflow.fx.ShapeConverter;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.collections.FXCollections;
@@ -53,6 +52,7 @@ import mpsviewer.view.MPSCanvas;
 import mpsviewer.view.MPSConceptSkin;
 import mpsviewer.view.MyCell;
 import mpsviewer.view.SvgConverter;
+import org.treez.results.javafxchart.svgconverter.JavaFxNodeToSvgConverter;
 
 
 import javax.swing.SwingUtilities;
@@ -72,8 +72,13 @@ public class FxWrapper {
     private FXValueSkinFactory fXSkinFactory;
     private VNode n;
     private VNode n2;
+    private Connector cn;
+    private Connector cn2;
+    private Connector c4;
+    private Connector c3;
     private boolean deleteNode = true;
     private Scene scene;
+    private ObservableList<String> dataTypes = FXCollections.observableArrayList();
 
 
     public FxWrapper(Container container, NodeHandler nodeHandler) {
@@ -129,6 +134,7 @@ public class FxWrapper {
         bp.setLeft(listView);
         root = controller.init();
         controller.configure(canvas);
+        controller.initDataListen(dataTypes);
         HBox hBox = new HBox();
         Button resetView = new Button("reset view");
 
@@ -150,23 +156,20 @@ public class FxWrapper {
             controller.reset2();
             canvas.resetScale();
             canvas.requestScale();
-            controller.reset(canvas.getContentScaleTransform().deltaTransform(minX,minY).getX(),canvas.getContentScaleTransform().deltaTransform(minX,minY).getY());
 
+            controller.reset(canvas.getContentScaleTransform().deltaTransform(minX,minY).getX(),canvas.getContentScaleTransform().deltaTransform(minX,minY).getY());
         });
 
         Button save = new Button("Save data");
         save.setOnMouseClicked(mouseEvent -> {
-            //visBreakPoints();
             nodehandler.saveData();
-            SvgConverter svgConvert = new SvgConverter();
-            System.out.println(svgConvert.convert(canvas));
+
         });
         Button reload = new Button("reload");
         reload.setOnMouseClicked(mouseEvent -> {
             //
             reload();
             nodehandler.reload();
-            //resetSkinFactory();
         });
 
         Button svgFile = new Button("Convert to svg");
@@ -174,7 +177,6 @@ public class FxWrapper {
             FileChooser fileChooser = new FileChooser();
             SvgConverter svgConverter = new SvgConverter();
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("IMAGE files (*.svg)", "*.svg"));
-
             File f = fileChooser.showSaveDialog(scene.getWindow());
 
             BufferedWriter writer = null;
@@ -189,17 +191,39 @@ public class FxWrapper {
                     e.printStackTrace();
                 }
             }
-
-
-
+            //String svgString = JavaFxNodeToSvgConverter.nodeToSvg(canvas);
+            //System.out.println(svgString);
 
 
         });
+        Button breakpoints = new Button("breakPOn");
+        breakpoints.setOnMouseClicked(mouseEvent -> {
+            flow.getConnectionSkinMapUnsynch(fXSkinFactory).forEach((s, connectionSkin) -> {
+                connectionSkin.triggerVisual(true);
+            });
 
-        hBox.getChildren().add(safe);
+        });
+        Button breakpointsOff = new Button("breakPOf");
+        breakpointsOff.setOnMouseClicked(mouseEvent -> {
+            flow.getConnectionSkinMapUnsynch(fXSkinFactory).forEach((s, connectionSkin) -> {
+                connectionSkin.triggerVisual(false);
+            });
+
+        });
+
+        Button legend = new Button("legend");
+        legend.setOnMouseClicked(mouseEvent -> {
+            controller.showHideLegend();
+
+        });
+        hBox.getChildren().add(save);
         hBox.getChildren().add(resetView);
         hBox.getChildren().add(reload);
         hBox.getChildren().add(svgFile);
+        hBox.getChildren().add(breakpoints);
+        hBox.getChildren().add(breakpointsOff);
+        hBox.getChildren().add(legend);
+
         bp.setTop(hBox);
         bp.setCenter(root);
     }
@@ -231,6 +255,8 @@ public class FxWrapper {
             startTestItems();
 
             flow.setVisible(true);
+            flow.connect(cn2,c4).getConnection().setId("muh1");
+            flow.connect(c3,cn).getConnection().setId("muh2");
 
 
             //test Node
@@ -241,22 +267,41 @@ public class FxWrapper {
 
     private void startTestItems(){
         NodeItem testItem = new NodeItem();
-        testItem.setName("test NAME");
+        testItem.setName("test test");
         testItem.setId("test ID");
         testItem.addProperty(new Property("test", "double"));
         testItem.addPort(new Port("testOut", "float", "out"));
+        dataTypes.add("float");
         testItem.addPort(new Port("testOut", "Type", "out"));
+        dataTypes.add("Type");
         testItem.addPort(new Port("testOut", "Double", "in"));
+        dataTypes.add("Double");
         testItem.addPort(new Port("testOut", "char", "in"));
+        dataTypes.add("char");
         testItem.addPort(new Port("testOut", "Type", "in"));
+        dataTypes.add("char");
         testItem.addPort(new Port("testOut", "char", "in"));
         testItem.addPort(new Port("testOut", "fhar", "in"));
+
+        dataTypes.add("float");
+        dataTypes.add("Type");
+        dataTypes.add("Double");
+        dataTypes.add("char");
+        dataTypes.add("float");
+        dataTypes.add("fhar");
+        dataTypes.add("dummy2");
+        dataTypes.add("dummy3");
+        dataTypes.add("dummy4");
+        dataTypes.add("dummy5");
+        dataTypes.add("dummy6");
 
         listViewItems.add(testItem);
         n = flow.newNode();
 
+
         n.getValueObject().setValue(testItem);
-        Connector cn = n.addInput("double");
+        cn = n.addInput("double");
+
         cn.setLocalId("test");
         Connector cn5 = n.addInput("float");
         cn5.setLocalId("testlong");
@@ -266,18 +311,31 @@ public class FxWrapper {
         cn.setLocalId("test1");
         cn.getValueObject().setValue(testItem);
         n.setId("test");
+
         n2 = flow.newNode();
         n2.setId("test2");
-        Connector cn2 = n2.addOutput("double");
+        cn2 = n2.addOutput("double");
         n2.getValueObject().setValue(testItem);
         cn2.setLocalId("test2");
         cn2.getValueObject().setValue(testItem);
+
+        VNode n3 = flow.newNode();
+        n3.getValueObject().setValue(testItem);
+        n3.setId("test3");
+        c3 = n3.addOutput("double");
+        c3.getValueObject().setValue(testItem);
+        c4 = n3.addInput("double");
+
+
+
+        c4.getValueObject().setValue(testItem);
 
 
 
 
         flow.removeSkinFactories(fXSkinFactory);
         flow.addSkinFactories(fXSkinFactory);
+
     }
 
 
@@ -528,7 +586,7 @@ public class FxWrapper {
                             });
                         }
                         connectionSkin.addPoints(coordList);
-                        ArrayList<Circle> c = connectionSkin.getBreakpoints();
+
 
                     }
                 });
@@ -825,38 +883,15 @@ public class FxWrapper {
             }
 
         });
+
         return connections;
     }
 
-    public void visBreakPoints(){
-        Map<String, ArrayList<mpsviewer.model.Pair>> connections = new HashMap<>();
-        flow.getConnectionSkinMapUnsynch(fXSkinFactory).forEach((s, connectionSkin) -> {
-            ArrayList<mpsviewer.model.Pair> coords = new ArrayList<>();
-            String id = s.substring(s.indexOf("=") + 1, s.indexOf(";"));
-
-
-            ArrayList<Pair> points = connectionSkin.getPoints();
-            ArrayList<Circle> circles = connectionSkin.getBreakpoints();
-            circles.forEach(circle -> {
-                circle.setOpacity(1);
-            });
-
-
-            /*if(!id.equals("0")) {
-                if(!points.isEmpty()) {
-                    points.forEach(pair -> {
-                        coords.add(new mpsviewer.model.Pair(pair.getKey().toString(),pair.getValue().toString()));
-                        connections.put(id,coords);
-                    });
-                } else {
-                    connections.put(id,null);
-
-                }
-
-            }*/
-
-        });
+    public ObservableList<String> getDataTypes(){
+        return dataTypes;
     }
+
+
 
     public void resetSkinFactory(){
         Platform.runLater(() -> {

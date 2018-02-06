@@ -40,7 +40,7 @@
 */
 
 .vflow-background {
-    -fx-background-color: linear-gradient(to bottom, rgb(10,32,40), rgb(42,52,120));
+    -fx-background-color: linear-gradient(to bottom, rgb(0,0,40), rgb(42,52,120));
 }
 
 .window {
@@ -85,6 +85,11 @@
 
 .vnode-connection {
     -fx-stroke: rgba(255,0,0,0.4);
+    -fx-stroke-width: 5px;
+}
+
+.vnode-connection-highlight {
+    -fx-stroke: rgba(255,255,0,0.8);
     -fx-stroke-width: 5px;
 }
 

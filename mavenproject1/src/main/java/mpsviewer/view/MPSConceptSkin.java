@@ -5,22 +5,23 @@ import eu.mihosoft.vrl.workflow.VFlow;
 import eu.mihosoft.vrl.workflow.VNode;
 import eu.mihosoft.vrl.workflow.fx.FXSkinFactory;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
+import mpsviewer.Utility;
 import mpsviewer.model.NodeItem;
+import mpsviewer.model.Pair;
 
-import java.util.List;
+import java.lang.reflect.Array;
+import java.util.*;
 
 /**
  * Created by jseidelmann on 24.03.17.
@@ -68,11 +69,20 @@ public class MPSConceptSkin extends CustomFlowNodeSkinNew {
         vBox.getChildren().add(grid);
 //        vBox.getChildren().add(nameButton);*/
 
+        HBox nodeTypeBox = new HBox();
+        Label nodeTypeLabel = new Label("<<"+nodeItem.getName()+">>");
+        nodeTypeBox.getChildren().add(nodeTypeLabel);
+        nodeTypeLabel.setStyle("-fx-font-size: 14; ");
+        nodeTypeLabel.setTextFill(Color.ANTIQUEWHITE);
+        nodeTypeBox.setAlignment(Pos.BASELINE_CENTER);
+
 
         Label properties = new Label("Properties :");
         properties.setStyle("-fx-font-size: 12; ");
         properties.setTextFill(Color.ANTIQUEWHITE);
+        vBox.getChildren().add(nodeTypeBox);
         vBox.getChildren().add(properties);
+
 
         getModel().getConnectors().forEach(connector -> {
             Label label = new Label(connector.getLocalId());
@@ -97,18 +107,25 @@ public class MPSConceptSkin extends CustomFlowNodeSkinNew {
             else {
                 label.setLayoutX(getConnectorShape(connector).getRadius());
 
-                System.out.println("muh");
             }
             (getConnectorShape(connector)).addToRegion(label);
 
             Circle c = new Circle(getConnectorShape(connector).getRadius()/3);
 
-            try {
-                Color distinctColor = Color.web(gethexColor(connector.getType().toLowerCase().hashCode()));
+            if(Utility.getColors().containsKey(connector.getType().toLowerCase())) {
+                Color distinctColor = Color.web(Utility.getColors().get(connector.getType().toLowerCase()));
                 c.setFill(distinctColor);
-            }catch (Exception e){
-                System.out.println(e.getMessage());
+            } else {
+                try {
+                    Color distinctColor = Color.web(gethexColor(connector.getType().toLowerCase().hashCode()));
+                    c.setFill(distinctColor);
+                    System.out.println("Color for "+connector.getType()+" not found in Utility");
+                }catch (Exception e){
+                    System.out.println(e.getMessage());
+                }
+
             }
+
 
 
             getConnectorShape(connector).radiusProperty().addListener((observableValue, number, t1) -> {
@@ -139,6 +156,25 @@ public class MPSConceptSkin extends CustomFlowNodeSkinNew {
 
 
         getModel().setHeight(200);
+        vBox.setOnMouseEntered(mouseEvent -> {
+            Map<String, ArrayList<mpsviewer.model.Pair>> connections = new HashMap<>();
+            getController().getConnectionSkinMapUnsynch(getSkinFactory()).forEach((s, connectionSkin) -> {
+                String id = s.substring(s.indexOf("=") + 1, s.indexOf(";"));
+                if(getModel().getId().equals(connectionSkin.getReceiver().getNode().getId()) || getModel().getId().equals(connectionSkin.getSender().getNode().getId())) {
+                    connectionSkin.highlight(true);
+                }
+
+            });
+            //System.out.println("entered");
+        });
+        vBox.setOnMouseExited(mouseEvent -> {
+            getController().getConnectionSkinMapUnsynch(getSkinFactory()).forEach((s, connectionSkin) -> {
+                String id = s.substring(s.indexOf("=") + 1, s.indexOf(";"));
+                connectionSkin.highlight(false);
+
+            });
+            //System.out.println("exited");
+        });
 
 
         return vBox;

@@ -24,7 +24,7 @@ public class MPSCanvas extends ScalableContentPane {
 
     public MPSCanvas(FxWrapper fxWrapper) {
         this.fxWrapper = fxWrapper;
-        this.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
+        //this.setStyle("-fx-background-color: rgb(24, 0, 0);");
         //createDragDropEvents();
 
         //createDragDropEvents();
